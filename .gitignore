@@ -23,9 +23,6 @@ dist/
 # Antigravity / Agent artifacts
 .agent/
 
-# Nested Task 1 repository (tracked and pushed independently)
-Task-01-design-system/
-
 # Prisma
 # Note: Keep schema.prisma and migrations tracked; ignore sqlite temp files if any
 *.db
