@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function HomePage() {
   return (
     <main className="flex-1 flex flex-col justify-between">
@@ -5,22 +7,31 @@ export default function HomePage() {
       <header className="border-b border-outline-variant bg-surface/90 backdrop-blur sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-lg shadow-soft">
-              W
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-xl shadow-soft">
+              T
             </div>
             <div>
-              <span className="font-display font-semibold text-xl tracking-tight text-primary block leading-tight">
-                D Williams Fashion Hub
+              <span className="font-display font-semibold text-2xl tracking-tight text-primary block leading-tight">
+                Tayhlor
               </span>
               <span className="text-xs uppercase tracking-wider font-semibold text-secondary">
-                Tayhlor Platform
+                Bespoke Tailoring Atelier
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-container text-on-primary-container">
-              Bespoke Artisan Studio
-            </span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/auth/signin"
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-primary hover:bg-surface-container transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
+            >
+              Get Started
+            </Link>
           </div>
         </div>
       </header>
@@ -44,12 +55,18 @@ export default function HomePage() {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <div className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft cursor-default">
-            Artisan Tailoring System
-          </div>
-          <div className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-surface-container text-primary font-medium text-sm border border-outline-variant shadow-soft cursor-default">
-            Documented Design Foundation
-          </div>
+          <Link
+            href="/auth/signup"
+            className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 transition-opacity"
+          >
+            Create Customer Account
+          </Link>
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-surface-container text-primary font-medium text-sm border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
+          >
+            Sign In to Dashboard
+          </Link>
         </div>
       </section>
 
@@ -58,10 +75,10 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="font-display font-semibold text-2xl sm:text-3xl text-primary tracking-tight">
-              Craftsmanship & Architectural Principles
+              Craftsmanship & Atelier Principles
             </h2>
             <p className="mt-2 text-sm text-secondary">
-              Core structural pillars defined by the Tayhlor Product Specification
+              Core structural pillars defined by the Tayhlor Platform
             </p>
           </div>
 
@@ -127,9 +144,9 @@ export default function HomePage() {
       <footer className="border-t border-outline-variant bg-surface py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-sm text-secondary">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
-            <span className="font-display font-semibold text-primary">D Williams Fashion Hub</span>
+            <span className="font-display font-semibold text-primary">Tayhlor</span>
             <span className="hidden sm:inline text-outline">•</span>
-            <span>Tayhlor Atelier System</span>
+            <span>Bespoke Tailoring Platform</span>
           </div>
           <div className="flex items-center gap-6 text-xs">
             <span>Verified Information Standard (G3)</span>
@@ -141,4 +158,3 @@ export default function HomePage() {
     </main>
   );
 }
-

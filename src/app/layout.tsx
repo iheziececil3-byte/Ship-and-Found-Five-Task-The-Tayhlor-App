@@ -17,7 +17,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: 'Tayhlor | D Williams Fashion Hub',
+  title: 'Tayhlor | Bespoke Tailoring Platform',
   description: 'Bespoke tailoring management, precision measurements, and order progress tracking.',
 };
 
