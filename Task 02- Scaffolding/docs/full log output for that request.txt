@@ -1,0 +1,64 @@
+                                                          full log output for that request
+
+
+POST /api/auth/register 500 in 5566ms
+ GET /auth/signup 200 in 852ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1846ms (577 modules)
+[next-auth][warn][NEXTAUTH_URL] 
+https://next-auth.js.org/warnings#nextauth_url
+[next-auth][warn][NO_SECRET] 
+https://next-auth.js.org/warnings#no_secret
+ GET /api/auth/session 200 in 2507ms
+ GET /api/auth/session 200 in 46ms
+prisma:error 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+error: Environment variable not found: POSTGRES_PRISMA_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider  = "postgresql"
+10 |   url       = env("POSTGRES_PRISMA_URL") // Connection pooling with pgBouncer
+   |
+
+Validation Error Count: 1
+Registration error: PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+error: Environment variable not found: POSTGRES_PRISMA_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider  = "postgresql"
+10 |   url       = env("POSTGRES_PRISMA_URL") // Connection pooling with pgBouncer
+   |
+
+Validation Error Count: 1
+    at $n.handleRequestError (C:\Users\CECIL\Desktop\Tayhlor\node_modules\@prisma\client\runtime\library.js:121:7615)
+    at $n.handleAndLogRequestError (C:\Users\CECIL\Desktop\Tayhlor\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\CECIL\Desktop\Tayhlor\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\CECIL\Desktop\Tayhlor\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async POST (webpack-internal:///(rsc)/./src/app/api/auth/register/route.ts:28:26)   
+    at async C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57228
+    at async eT.execute (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46851)
+    at async eT.handle (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:58760)
+    at async doRender (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:1496:28)
+    at async DevServer.renderPageComponent (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\CECIL\Desktop\Tayhlor\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+ POST /api/auth/register 500 in 76ms

@@ -1,0 +1,15 @@
+                                               Request	Status code	
+
+
+Meaning
+POST /api/auth/register	500	Registration failed because the server encountered an error.
+GET /auth/signup	200	The signup page loaded successfully.
+GET /api/auth/session	200	The session endpoint responded successfully.
+
+What does that mean?
+
+HTTP 201 Created indicates that a new resource was successfully created. In this case, that would mean a new user account was created.
+
+Because registration returned 500, we have no evidence that the account was created. The missing POSTGRES_PRISMA_URL environment variable prevented Prisma from accessing the database.
+
+So therefore, account was not successfully created.

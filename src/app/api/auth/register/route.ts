@@ -1,12 +1,26 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/passwords';
 import { signUpSchema } from '@/lib/validations/auth';
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
+function getRecordEnvironment(): 'LIVE' | 'TEST' | 'PREVIEW' {
+  const value = process.env.RECORD_ENVIRONMENT;
+  return value === 'TEST' || value === 'PREVIEW' ? value : 'LIVE';
+}
 
+export async function POST(req: Request) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: 'Invalid JSON request payload' },
+      { status: 400 }
+    );
+  }
+
+  try {
     // SEC-07: Validate input on server
     const parsed = signUpSchema.safeParse(body);
     if (!parsed.success) {
@@ -46,6 +60,7 @@ export async function POST(req: Request) {
         phone,
         passwordHash,
         role: 'CUSTOMER',
+        recordEnvironment: getRecordEnvironment(),
       },
       select: {
         id: true,
@@ -64,6 +79,16 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
+    // Two requests can pass the existence check at the same time.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        {
+          error: 'An account with this email address already exists. Please sign in instead.',
+        },
+        { status: 409 }
+      );
+    }
+
     console.error('Registration error:', error);
     return NextResponse.json(
       { error: 'An unexpected error occurred while creating your account. Please try again later.' },
