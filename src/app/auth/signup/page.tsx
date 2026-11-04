@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession, signOut } from 'next-auth/react';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,6 +16,52 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  // If already authenticated, show status card
+  if (status === 'authenticated' && session?.user) {
+    return (
+      <div className="min-h-screen bg-surface-container-low flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+          <Link href="/" className="inline-flex items-center gap-3 group">
+            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-2xl shadow-soft">
+              T
+            </div>
+            <span className="font-display font-semibold text-3xl tracking-tight text-primary">
+              Tayhlor
+            </span>
+          </Link>
+          <div className="mt-8 bg-surface py-8 px-6 sm:px-10 rounded-2xl border border-outline-variant shadow-soft text-center">
+            <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container mx-auto flex items-center justify-center mb-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="font-display font-semibold text-xl text-primary">
+              Account Active
+            </h2>
+            <p className="mt-2 text-sm text-secondary">
+              You already have an active session as <span className="font-semibold text-primary">{session.user.name || session.user.email}</span>.
+            </p>
+            <div className="mt-6 space-y-3">
+              <Link
+                href="/"
+                className="w-full inline-flex justify-center py-2.5 px-4 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 transition-all"
+              >
+                Return to Tayhlor Home
+              </Link>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: '/auth/signup' })}
+                className="w-full inline-flex justify-center py-2 px-4 rounded-lg border border-outline-variant text-primary text-sm font-medium hover:bg-surface-container transition-colors"
+              >
+                Sign Out to Create a Different Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +108,12 @@ export default function SignUpPage() {
   };
 
   const handleGoogleSignIn = () => {
+    setError(null);
     setIsGoogleLoading(true);
-    signIn('google', { callbackUrl: '/' });
+    signIn('google', { callbackUrl: '/' }).catch(() => {
+      setError('Google Sign-In is not configured yet. Please sign in with your email and password.');
+      setIsGoogleLoading(false);
+    });
   };
 
   return (

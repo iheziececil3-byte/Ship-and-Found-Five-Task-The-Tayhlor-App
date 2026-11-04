@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { UserNav } from '@/components/navigation/UserNav';
+import { HeroActions } from '@/components/home/HeroActions';
 
 export default function HomePage() {
   return (
@@ -19,20 +20,7 @@ export default function HomePage() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/auth/signin"
-              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-primary hover:bg-surface-container transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
-            >
-              Get Started
-            </Link>
-          </div>
+          <UserNav />
         </div>
       </header>
 
@@ -54,20 +42,7 @@ export default function HomePage() {
           deposit, and stitch is recorded and verified in one place.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/auth/signup"
-            className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 transition-opacity"
-          >
-            Create Customer Account
-          </Link>
-          <Link
-            href="/auth/signin"
-            className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-surface-container text-primary font-medium text-sm border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
-          >
-            Sign In to Dashboard
-          </Link>
-        </div>
+        <HeroActions />
       </section>
 
       {/* Foundation & Architecture Cards */}
