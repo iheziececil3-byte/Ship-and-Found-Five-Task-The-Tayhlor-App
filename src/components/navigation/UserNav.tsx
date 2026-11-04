@@ -39,12 +39,6 @@ export function UserNav() {
   return (
     <div className="flex items-center gap-3">
       <Link
-        href="/auth/signin"
-        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-primary hover:bg-surface-container transition-colors"
-      >
-        Sign In
-      </Link>
-      <Link
         href="/auth/signup"
         className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
       >

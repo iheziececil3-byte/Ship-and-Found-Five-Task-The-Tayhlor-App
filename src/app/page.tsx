@@ -1,5 +1,38 @@
+import type { Metadata } from 'next';
 import { UserNav } from '@/components/navigation/UserNav';
 import { HeroActions } from '@/components/home/HeroActions';
+
+export const metadata: Metadata = {
+  title: 'Bespoke Tailoring Atelier',
+  description: 'Bespoke tailoring management platform',
+  keywords: [
+    'bespoke tailoring',
+    'custom clothing',
+    'tailor atelier',
+    'garment measurements',
+    'clothing orders',
+  ],
+  authors: [{ name: 'Tayhlor Atelier' }],
+  creator: 'Tayhlor',
+  publisher: 'Tayhlor',
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    locale: 'en_US',
+    siteName: 'Tayhlor',
+    title: 'Tayhlor | Bespoke Tailoring Atelier',
+    description: 'Bespoke tailoring management platform',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tayhlor | Bespoke Tailoring Atelier',
+    description: 'Bespoke tailoring management platform',
+  },
+};
 
 export default function HomePage() {
   return (
@@ -11,14 +44,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-xl shadow-soft">
               T
             </div>
-            <div>
-              <span className="font-display font-semibold text-2xl tracking-tight text-primary block leading-tight">
-                Tayhlor
-              </span>
-              <span className="text-xs uppercase tracking-wider font-semibold text-secondary">
-                Bespoke Tailoring Atelier
-              </span>
-            </div>
+            <span className="font-display font-semibold text-2xl tracking-tight text-primary">
+              Tayhlor
+            </span>
           </div>
           <UserNav />
         </div>
