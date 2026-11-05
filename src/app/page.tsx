@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { UserNav } from '@/components/navigation/UserNav';
 import { HeroActions } from '@/components/home/HeroActions';
 
@@ -40,14 +41,18 @@ export default function HomePage() {
       {/* Brand Navigation Header */}
       <header className="border-b border-outline-variant bg-surface/90 backdrop-blur sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            aria-label="Tayhlor home"
+            className="flex items-center gap-3 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+          >
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-xl shadow-soft">
               T
             </div>
             <span className="font-display font-semibold text-2xl tracking-tight text-primary">
               Tayhlor
             </span>
-          </div>
+          </Link>
           <UserNav />
         </div>
       </header>
