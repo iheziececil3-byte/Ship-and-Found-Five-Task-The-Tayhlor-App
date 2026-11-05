@@ -61,7 +61,7 @@ export default function HomePage() {
           </span>
         </div>
 
-        <h1 className="font-display font-semibold text-4xl sm:text-5xl lg:text-6xl text-primary tracking-tight max-w-4xl leading-[1.15]">
+        <h1 className="font-display font-semibold text-4xl sm:text-5xl lg:text-6xl text-primary tracking-tight max-w-3xl leading-[1.15]">
           Bespoke tailoring, crafted with timeless precision.
         </h1>
 

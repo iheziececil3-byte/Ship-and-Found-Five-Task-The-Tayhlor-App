@@ -6,15 +6,7 @@ import { useSession, signOut } from 'next-auth/react';
 export function UserNav() {
   const { data: session, status } = useSession();
 
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (session?.user) {
+  if (status === 'authenticated' && session?.user) {
     return (
       <div className="flex items-center gap-3">
         <div className="text-right hidden sm:block">
@@ -28,7 +20,7 @@ export function UserNav() {
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium border border-outline-variant text-primary hover:bg-surface-container transition-colors"
+          className="inline-flex items-center justify-center py-3 px-6 rounded-lg label-large border border-outline-variant text-primary hover:bg-surface-container transition-colors"
         >
           Sign Out
         </button>
@@ -40,7 +32,7 @@ export function UserNav() {
     <div className="flex items-center gap-3">
       <Link
         href="/auth/signup"
-        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
+        className="inline-flex items-center justify-center py-3 px-6 rounded-lg label-large bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
       >
         Get Started
       </Link>

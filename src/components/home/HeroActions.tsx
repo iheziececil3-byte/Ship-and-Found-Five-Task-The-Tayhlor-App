@@ -21,13 +21,13 @@ export function HeroActions() {
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/customer/orders"
-            className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 transition-opacity"
+            className="inline-flex items-center justify-center py-3 px-6 rounded-lg label-large bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
           >
             Access Atelier Orders
           </Link>
           <Link
             href="/customer/measurements"
-            className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-surface-container text-primary font-medium text-sm border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
+            className="inline-flex items-center justify-center py-3 px-6 rounded-lg label-large bg-surface-container text-primary border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
           >
             My Measurements (FR-10)
           </Link>
@@ -40,13 +40,13 @@ export function HeroActions() {
     <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
       <Link
         href="/auth/signup"
-        className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 transition-opacity"
+        className="inline-flex items-center justify-center py-3 px-6 rounded-lg label-large bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
       >
         Create Customer Account
       </Link>
       <Link
         href="/auth/signin"
-        className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-surface-container text-primary font-medium text-sm border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
+        className="inline-flex items-center justify-center py-3 px-6 rounded-lg label-large bg-surface-container text-primary border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
       >
         Sign In to Dashboard
       </Link>
