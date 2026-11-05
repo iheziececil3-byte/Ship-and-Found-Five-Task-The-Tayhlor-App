@@ -1,1 +1,1 @@
-I used Big pickle Ai agent in Opencode for building my app features.
+I tried using big pickle and deep seek in opencode to build my database connection and it took forever and kept going for hours until i had to put a stop to both. Then i switched to gemini 3.8 flash high to build the databse connection and carried out other features required by the bootcamp, and it delivered flawlessy. I think its ability to always read files first makes its more flexible and reliable, but its speed isn't that palatable but it does the job just fine.
