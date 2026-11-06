@@ -19,7 +19,7 @@ Tayhlor replaces scattered informal messaging channels, physical paper ledgers, 
 - **Application Shell & Layout**: Established Next.js 14 App Router layout (`src/app/layout.tsx`) with font optimization, client-side session hydration via `SessionProvider`, and responsive marketing landing page (`src/app/page.tsx`).
 - **Authentication Infrastructure**: NextAuth.js v4 configuration is centralized at `src/lib/auth.ts` (exported as `authOptions` and served via `src/app/api/auth/[...nextauth]/route.ts`). The implementation uses a stateless JWT session strategy (`strategy: 'jwt'`) with an inactivity expiration window of seven days (`maxAge: 7 * 24 * 60 * 60`, or 604,800 seconds) in accordance with requirement `ACC-08`. Standard NextAuth session and token types are augmented in `src/types/next-auth.d.ts` to support application roles, populating the user's assigned role (`CUSTOMER` or `TAILOR`) into both the JWT token and the active client session through custom `jwt` and `session` callbacks. Live user authentication is handled via the Credentials provider, which validates submitted email and password inputs against server-side Zod schemas (`src/lib/validations/auth.ts`), verifies bcrypt password hashes against the database `User` record, and returns generic authentication failures (`ACC-07`) if credentials do not match.
 - **Customer Registration Endpoint**: API route (`src/app/api/auth/register/route.ts`) enforcing server-side Zod validation (`src/lib/validations/auth.ts`), password hashing with 12 salt rounds via `bcryptjs`, duplicate email conflict handling (HTTP 409 and Prisma `P2002` error catching), and test-environment data labeling (`recordEnvironment`).
-- **Authentication Interface**: Interactive Sign-In (`src/app/auth/signin/page.tsx`) and Sign-Up (`src/app/auth/signup/page.tsx`) pages equipped with active session detection, graceful degradation when optional OAuth credentials are omitted, and form error feedback.
+- **Authentication Interface**: Unified SPA auth page (`src/app/auth/page.tsx`) that renders the sign-in, sign-up, and password-reset views from the `mode` URL query parameter (`/auth?mode=login`, `/auth?mode=signup`, `/auth?mode=reset`) using conditional rendering, with active session detection, graceful degradation when optional OAuth credentials are omitted, and form error feedback.
 - **Session-Aware Navigation**: Dynamic header navigation (`src/components/navigation/UserNav.tsx`) and hero callouts (`src/components/home/HeroActions.tsx`) displaying authenticated user identity, role badges, and functional client-side sign-out (`signOut({ callbackUrl: '/' })`).
 - **Database Schema Foundation**: Comprehensive Prisma schema (`prisma/schema.prisma`) declaring 10 core domain and audit models (`User`, `Business`, `Measurement`, `Order`, `OrderStatusAudit`, `Payment`, `Fitting`, `FAQDocument`, `FAQChunk`, `ContactAudit`) with integer kobo money representations and test data isolation tags.
 - **Database Baseline Migration**: Version-controlled initial PostgreSQL migration (`prisma/migrations/20261102151000_init/migration.sql`) tracking table DDL, foreign key relationships, indexes, and enumeration types.
@@ -120,7 +120,7 @@ npm run dev
 ### 6. Verify the Application
 1. Open your browser and navigate to `http://localhost:3000`.
 2. Verify that the Tayhlor marketing landing page renders with the brand heading, typography, and action buttons.
-3. Click **"Get Started"** or visit `http://localhost:3000/auth/signup`.
+3. Click **"Get Started"** or visit `http://localhost:3000/auth?mode=signup`.
 4. Register a test customer account with a name, email, phone number, and password (minimum 8 characters).
 5. Upon successful creation, you are automatically signed in and redirected to `/`.
 6. Confirm that the header now displays your name, a `"CUSTOMER"` badge, and a **"Sign Out"** button.
@@ -132,7 +132,7 @@ npm run dev
 
 ### Common Troubleshooting
 - **Database Connection Refused (`ECONNREFUSED`)**: Verify that PostgreSQL is actively running on the configured host and port, and check credentials in `.env`.
-- **Unique Constraint Violation (`P2002`)**: Registration fails if an account with that email already exists. Use a unique email or navigate to `/auth/signin`.
+- **Unique Constraint Violation (`P2002`)**: Registration fails if an account with that email already exists. Use a unique email or navigate to `/auth?mode=login`.
 - **Missing Secret Warning**: If NextAuth logs a warning about missing secrets, confirm that `NEXTAUTH_SECRET` is populated in `.env` and restart the development server.
 
 ---

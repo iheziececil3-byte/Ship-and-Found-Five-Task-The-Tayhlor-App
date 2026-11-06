@@ -12,9 +12,9 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/auth?mode=login',
     newUser: '/customer/dashboard',
-    error: '/auth/signin',
+    error: '/auth?mode=login',
   },
   providers: [
     CredentialsProvider({

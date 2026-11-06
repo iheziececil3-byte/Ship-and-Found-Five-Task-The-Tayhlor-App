@@ -39,13 +39,13 @@ export function HeroActions() {
   return (
     <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
       <Link
-        href="/auth/signup"
+        href="/auth?mode=signup"
         className="inline-flex items-center justify-center py-3 px-6 rounded-lg text-fluid-label font-medium bg-primary text-on-primary shadow-soft hover:opacity-95 transition-opacity"
       >
         Create Customer Account
       </Link>
       <Link
-        href="/auth/signin"
+        href="/auth?mode=login"
         className="inline-flex items-center justify-center py-3 px-6 rounded-lg text-fluid-label font-medium bg-surface-container text-primary border border-outline-variant shadow-soft hover:bg-surface-container-high transition-colors"
       >
         Sign In to Dashboard

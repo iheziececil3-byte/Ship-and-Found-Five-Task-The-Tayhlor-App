@@ -1,19 +1,18 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sign In',
-  description: 'Bespoke tailoring management platform',
+  title: 'Account Access',
+  description: 'Sign in or create your Tayhlor customer account',
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default function SignInLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return <>{children}</>;
 }
-
