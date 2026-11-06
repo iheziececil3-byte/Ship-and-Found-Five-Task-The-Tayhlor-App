@@ -19,9 +19,20 @@ const manrope = Manrope({
   preload: true,
 });
 
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://tayhlor.vercel.app');
+
 export const metadata: Metadata = {
-  title: 'Tayhlor | Bespoke Tailoring Platform',
-  description: 'Bespoke tailoring management, precision measurements, and order progress tracking.',
+  metadataBase: new URL(appUrl),
+  title: {
+    default: 'Tayhlor | Bespoke Tailoring Atelier',
+    template: '%s | Tayhlor',
+  },
+  description: 'Bespoke tailoring management platform',
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {

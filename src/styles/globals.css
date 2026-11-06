@@ -4,6 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --text-fluid-hero: clamp(2.25rem, 1.5rem + 3.6vw, 3.75rem);
+  --text-fluid-brand: clamp(1.5rem, 1.35rem + 0.6vw, 1.875rem);
+  --text-fluid-headline-lg: clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem);
+  --text-fluid-title: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem);
+  --text-fluid-lead: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  --text-fluid-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --text-fluid-body-sm: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
+  --text-fluid-label: clamp(0.875rem, 0.85rem + 0.08vw, 0.9375rem);
+  --text-fluid-badge: clamp(0.6875rem, 0.66rem + 0.1vw, 0.75rem);
+}
+
 @layer base {
   body {
     background-color: var(--color-background);
@@ -13,6 +25,61 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-family-display);
+  }
+
+  a[href],
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  @media (hover: hover) {
+    a[href],
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']) {
+      transition-property: color, background-color, border-color, opacity, filter, transform,
+        box-shadow;
+      transition-duration: 150ms;
+      transition-timing-function: ease;
+    }
+
+    a[href]:hover,
+    button:not(:disabled):hover,
+    [role='button']:not([aria-disabled='true']):hover {
+      filter: brightness(0.92);
+      transform: translateY(-2px);
+    }
+
+    a[href]:active,
+    button:not(:disabled):active,
+    [role='button']:not([aria-disabled='true']):active {
+      filter: brightness(0.85);
+      transform: translateY(1px) scale(0.97);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a[href],
+    button,
+    [role='button'] {
+      transition: none;
+    }
+
+    a[href]:hover,
+    button:not(:disabled):hover,
+    [role='button']:not([aria-disabled='true']):hover,
+    a[href]:active,
+    button:not(:disabled):active,
+    [role='button']:not([aria-disabled='true']):active {
+      transform: none;
+    }
   }
 }
 
