@@ -1,0 +1,30 @@
+02-page-count-after
+
+
+
+Ran find current page.tsx files
+Checked task Find current page.tsx files
+
+Following the merge of the **Unified Authentication** refactor, the app now consists of **2 primary pages** (defined by `page.tsx` files in Next.js):
+
+---
+
+### 1. Home / Marketing Landing Page
+- **Route:** `/`
+- **File:** [`src/app/page.tsx`](file:///c:/Users/CECIL/Desktop/Tayhlor/src/app/page.tsx)
+- **Description:** The public-facing landing page featuring the brand hero header, fluid typography tokens, value proposition, atelier process overview, and dynamic session-aware action buttons.
+
+---
+
+### 2. Unified Authentication Page (SPA)
+- **Route:** `/auth`
+- **File:** [`src/app/auth/page.tsx`](file:///c:/Users/CECIL/Desktop/Tayhlor/src/app/auth/page.tsx)
+- **Description:** A single-page application (SPA) authentication portal that dynamically renders 3 views based on the `?mode` URL query parameter:
+  - **Login View (`/auth?mode=login`)**: Default view for returning customers and the tailor to sign in with email and password (or Google OAuth).
+  - **Sign-Up View (`/auth?mode=signup`)**: Registration form for new customers to create an account with full name, email, phone number, and password.
+  - **Reset Password View (`/auth?mode=reset`)**: Advisory view informing users about the password recovery process.
+  - *Active Session View*: Displays an authenticated account panel with an option to sign out if an active session is already detected.
+
+---
+
+*(Note: Backend API endpoints like `/api/auth/register` and `/api/auth/[...nextauth]` handle server-side data processing and do not render UI pages).*

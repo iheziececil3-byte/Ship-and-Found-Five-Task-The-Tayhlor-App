@@ -1,0 +1,26 @@
+04-form-switch-logs
+
+
+PS C:\Users\CECIL\Desktop\Tayhlor> npm run dev
+
+> tayhlor@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 13.4s
+ ○ Compiling / ...
+ ✓ Compiled / in 30.1s (635 modules)
+ ✓ Compiled in 4.5s (309 modules)
+ GET / 200 in 34870ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 12.2s (357 modules)
+ ✓ Compiled (613 modules)
+ GET /icon.svg 200 in 18630ms
+ GET /api/auth/session 200 in 20750ms
+ GET /api/auth/session 200 in 900ms
+ ○ Compiling /auth ...
+ ✓ Compiled /auth in 9.1s (630 modules)

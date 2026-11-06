@@ -1,0 +1,38 @@
+
+
+                                            01-page-count-before
+
+
+Ran find all page.tsx files
+Checked task Find all page.tsx files
+
+I am checking the page routes in the application.
+
+Checked task Find all page.tsx files
+
+The Tayhlor application currently has **3 pages** implemented:
+
+---
+
+### 1. Home / Landing Page
+- **Route:** `/`
+- **File:** [`src/app/page.tsx`](file:///c:/Users/CECIL/Desktop/Tayhlor/src/app/page.tsx)
+- **Description:** The public marketing and entry landing page featuring the brand hero header, fluid typography tokens, value proposition overview, step-by-step process explanation, and primary action buttons (*"Get Started"* / *"Sign In"* or customer dashboard shortcuts when authenticated).
+
+---
+
+### 2. Sign-In Page
+- **Route:** `/auth/signin`
+- **File:** [`src/app/auth/signin/page.tsx`](file:///c:/Users/CECIL/Desktop/Tayhlor/src/app/auth/signin/page.tsx)
+- **Description:** The login portal where registered customers and the tailor authenticate using their email and password (with support for optional Google OAuth sign-in), session redirection, and validation feedback.
+
+---
+
+### 3. Sign-Up / Registration Page
+- **Route:** `/auth/signup`
+- **File:** [`src/app/auth/signup/page.tsx`](file:///c:/Users/CECIL/Desktop/Tayhlor/src/app/auth/signup/page.tsx)
+- **Description:** The customer onboarding page where new customers create an account by providing their full name, email address, phone number, and password.
+
+---
+
+*(Note: API routes such as `/api/auth/register` and `/api/auth/[...nextauth]` exist as backend endpoints rather than user-facing pages, and destination pages linked in navigation like `/customer/orders` and `/customer/measurements` are not yet created).*
