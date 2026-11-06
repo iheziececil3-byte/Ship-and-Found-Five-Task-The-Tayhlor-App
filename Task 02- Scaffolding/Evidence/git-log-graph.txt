@@ -1,0 +1,20 @@
+PS C:\Users\CECIL\Desktop\Tayhlor> git log --graph --oneline --all
+*   f5124c5 (HEAD -> master, origin/master, origin/HEAD) Merge pull request #1 from iheziececil3-byte/feature01-information-design
+|\  
+| * 10def9a feat(ui): implement fluid typography system with CSS clamp and Tailwind tokens
+| * c2e2f6f docs(task-02): add Information Design decisions and verification document
+| * c0dbe60 feat(ui): add interactive micro-interactions and brand home navigation links
+| * 60e3141 docs(task-02): update model choices log with benchmark evaluation
+| * a695d2e feat(ui): standardize landing page buttons with design tokens and optimize heading wrapping
+| * 9074377 docs(task-02): add preliminary README test reviewer feedback
+| * e4b9c52 feat(head): add dynamic page titles, SEO metadata, dark navy favicon, and header adjustments      
+* | c4255fe docs(task-02): add false-success analysis, working tree essay, and evidence diagram
+|/  
+* f16178c docs: format trailing newline in README.md
+* 8f92b7a docs: add comprehensive Tayhlor project README
+* 74fac67 fix(auth): add session-aware header navigation, hero actions, and signout flow
+* 21f4512 fix(auth): enhance customer registration validation, duplicate handling, and test-environment propag
+ation
+* d6fa5b1 feat(db): track initial Prisma migration for PostgreSQL schema
+* 48e4c38 feat(auth): implement NextAuth credentials and Google sign-in with role-based route middleware
+:

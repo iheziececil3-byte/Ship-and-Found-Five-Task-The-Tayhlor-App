@@ -1,5 +1,4 @@
-                                                          full log output for that request
-
+                                                                  write-succeeded-logs
 
 POST /api/auth/register 500 in 5566ms
  GET /auth/signup 200 in 852ms

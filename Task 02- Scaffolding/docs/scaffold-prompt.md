@@ -1,4 +1,31 @@
 # Tayhlor: Project Scaffolding and Foundation Setup
+ My own scaffold prompt
+
+You are a professional software engineer and designer with 7 experience. you have built many professional and standard product and you can comfortably raise a product from ground level to complete finishing.
+
+Your task is to scaffold this project, take it from ground level and build the structure and foundation.
+
+Everything you need to know about my tayhlor project is in file tree in our workspace, so therefore:
+
+1. You must read all context files and design system files before writing any code.
+2. Summarize its understanding and wait for my approval.
+3. Treat those files as the only source of truth.
+4. Ask rather than assume when two files disagree.
+5. Use design system tokens with no hardcoded styling values.
+6. Build only the project setup and a minimal home screen. Basically setup the foundation and lay the structure for our product. Not the entire product.
+7. List every file you will create and every assumption it made. Then
+8. Audit your own response against these instructions.
+
+Your deliverable is the skeleton. Success = the structure exists and
+the project runs (starts up), NOT that features work yet.
+
+
+
+
+
+
+
+
 
 ## Role
 
@@ -177,7 +204,7 @@ Everything you need to know about my tayhlor project is in file tree in our work
 7. List every file you will create and every assumption it made. Then
 8. Audit your own response against these instructions.
 
-Your deliverable is the skeleton. Success = the structure exists and 
+Your deliverable is the skeleton. Success = the structure exists and
 the project runs (starts up), NOT that features work yet.
 
 
