@@ -13,6 +13,38 @@ const config: Config = {
         sans: ['var(--font-family-body)', 'sans-serif'],
         body: ['var(--font-family-body)', 'sans-serif'],
       },
+      fontSize: {
+        'fluid-hero': [
+          'var(--text-fluid-hero)',
+          { lineHeight: '1.15', letterSpacing: '-0.02em' },
+        ],
+        'fluid-brand': [
+          'var(--text-fluid-brand)',
+          { lineHeight: '1.1', letterSpacing: '-0.02em' },
+        ],
+        'fluid-headline-lg': [
+          'var(--text-fluid-headline-lg)',
+          { lineHeight: '1.25', letterSpacing: '-0.015em' },
+        ],
+        'fluid-title': [
+          'var(--text-fluid-title)',
+          { lineHeight: '1.3', letterSpacing: '-0.01em' },
+        ],
+        'fluid-lead': [
+          'var(--text-fluid-lead)',
+          { lineHeight: '1.6', letterSpacing: '-0.01em' },
+        ],
+        'fluid-body': ['var(--text-fluid-body)', { lineHeight: '1.6' }],
+        'fluid-body-sm': ['var(--text-fluid-body-sm)', { lineHeight: '1.6' }],
+        'fluid-label': [
+          'var(--text-fluid-label)',
+          { lineHeight: '1.4', letterSpacing: '-0.01em' },
+        ],
+        'fluid-badge': [
+          'var(--text-fluid-badge)',
+          { lineHeight: '1.4', letterSpacing: '0.01em' },
+        ],
+      },
       colors: {
         primary: {
           DEFAULT: 'var(--color-primary)',

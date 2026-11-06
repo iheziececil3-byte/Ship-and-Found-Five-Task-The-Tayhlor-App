@@ -26,7 +26,7 @@ function SignInForm() {
             <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-2xl shadow-soft">
               T
             </div>
-            <span className="font-display font-semibold text-3xl tracking-tight text-primary">
+            <span className="font-display font-semibold text-fluid-brand text-primary">
               Tayhlor
             </span>
           </Link>
@@ -36,23 +36,23 @@ function SignInForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="font-display font-semibold text-xl text-primary">
+            <h2 className="font-display font-semibold text-fluid-title text-primary">
               Already Signed In
             </h2>
-            <p className="mt-2 text-sm text-secondary">
+            <p className="mt-2 text-fluid-body-sm text-secondary">
               You are currently signed in as <span className="font-semibold text-primary">{session.user.name || session.user.email}</span> ({session.user.role}).
             </p>
             <div className="mt-6 space-y-3">
               <Link
                 href="/"
-                className="w-full inline-flex justify-center py-2.5 px-4 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 transition-all"
+                className="w-full inline-flex justify-center py-2.5 px-4 rounded-lg bg-primary text-on-primary font-medium text-fluid-label shadow-soft hover:opacity-95 transition-all"
               >
                 Return to Tayhlor Home
               </Link>
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-                className="w-full inline-flex justify-center py-2 px-4 rounded-lg border border-outline-variant text-primary text-sm font-medium hover:bg-surface-container transition-colors"
+                className="w-full inline-flex justify-center py-2 px-4 rounded-lg border border-outline-variant text-primary text-fluid-label font-medium hover:bg-surface-container transition-colors"
               >
                 Sign Out to Switch Accounts
               </button>
@@ -107,14 +107,14 @@ function SignInForm() {
           <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-2xl shadow-soft">
             T
           </div>
-          <span className="font-display font-semibold text-3xl tracking-tight text-primary">
+          <span className="font-display font-semibold text-fluid-brand text-primary">
             Tayhlor
           </span>
         </Link>
-        <h2 className="mt-6 font-display font-semibold text-2xl text-primary tracking-tight">
+        <h2 className="mt-6 font-display font-semibold text-fluid-headline-lg text-primary">
           Welcome back
         </h2>
-        <p className="mt-2 text-sm text-secondary">
+        <p className="mt-2 text-fluid-body-sm text-secondary">
           Sign in to access your orders, measurements, and atelier updates
         </p>
       </div>
@@ -124,7 +124,7 @@ function SignInForm() {
           {error && (
             <div
               role="alert"
-              className="mb-6 p-4 rounded-lg bg-error-container/20 border border-error/30 text-error text-sm flex items-start gap-3"
+              className="mb-6 p-4 rounded-lg bg-error-container/20 border border-error/30 text-error text-fluid-body-sm flex items-start gap-3"
             >
               <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -139,7 +139,7 @@ function SignInForm() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-primary mb-1.5">
+              <label htmlFor="email" className="block text-fluid-label font-medium text-primary mb-1.5">
                 Email address
               </label>
               <input
@@ -150,12 +150,12 @@ function SignInForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
+                className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-fluid-label transition-all"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-primary mb-1.5">
+              <label htmlFor="password" className="block text-fluid-label font-medium text-primary mb-1.5">
                 Password
               </label>
               <input
@@ -166,14 +166,14 @@ function SignInForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
+                className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-fluid-label transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading || isGoogleLoading}
-              className="w-full py-3 px-4 rounded-lg bg-primary text-on-primary font-medium text-sm shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 rounded-lg bg-primary text-on-primary font-medium text-fluid-label shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -190,7 +190,7 @@ function SignInForm() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-outline-variant" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-fluid-badge uppercase">
               <span className="bg-surface px-3 text-secondary font-medium tracking-wider">
                 Or continue with
               </span>
@@ -202,7 +202,7 @@ function SignInForm() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading || isGoogleLoading}
-              className="w-full py-2.5 px-4 rounded-lg border border-outline-variant bg-surface text-primary font-medium text-sm hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 flex items-center justify-center gap-3"
+              className="w-full py-2.5 px-4 rounded-lg border border-outline-variant bg-surface text-primary font-medium text-fluid-label hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 flex items-center justify-center gap-3"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -226,7 +226,7 @@ function SignInForm() {
             </button>
           </div>
 
-          <div className="mt-8 text-center text-sm text-secondary">
+          <div className="mt-8 text-center text-fluid-body-sm text-secondary">
             Don&apos;t have an account?{' '}
             <Link
               href="/auth/signup"
@@ -237,7 +237,7 @@ function SignInForm() {
           </div>
         </div>
 
-        <div className="mt-8 text-center text-xs text-secondary">
+        <div className="mt-8 text-center text-fluid-badge text-secondary">
           <Link href="/" className="hover:underline">
             ← Back to Tayhlor Home
           </Link>
