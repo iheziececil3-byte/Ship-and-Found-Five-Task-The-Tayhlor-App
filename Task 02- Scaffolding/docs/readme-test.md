@@ -1,43 +1,75 @@
 # README Test
 
-## Reviewer Feedback
+## 1. Purpose of the README Test
 
-**Test status:** Preliminary review completed; practical setup test pending.
+The purpose of the README test is to verify that a developer with no prior exposure to the Tayhlor codebase can read `README.md`, accurately comprehend the project's architecture, verify the true implementation status of all subsystems, and follow the setup instructions to run the application locally. It also serves as an audit mechanism to ensure all technical claims in the documentation remain strictly faithful to the actual source code and runtime behavior.
 
-The README was shared with someone who had not previously worked on the project. The reviewer read through the documentation and provided the following feedback.
+---
 
-### 1. Areas That Need Clarification
+## 2. Reviewer Examination and Code Execution
 
-The reviewer identified two sections that could be clearer:
+The `README.md` documentation was shared with an external reviewer who had not previously worked on the project. The reviewer read through the complete documentation and subsequently ran the application code.
 
-**Authentication Infrastructure**
+**Current Test Status:**
+- Documentation review: **Completed**.
+- Code execution: **Completed**.
+- Independent end-to-end setup test from scratch: **Unverified (Pending)**.
 
-The reviewer requested clearer explanations of the NextAuth v4 configuration in `src/lib/auth.ts`, including the JWT session strategy, seven-day inactivity expiration (ACC-08), role augmentation (`CUSTOMER` and `TAILOR`), and Credentials provider integration.
+---
 
-**Database Model Operationalization**
+## 3. Areas Identified for Clarification
 
-The reviewer requested clarification that although the schema and baseline migration define all nine domain models, only the `User` model is currently queried and mutated by live application code.
+The reviewer identified two specific sections where documentation needed clearer technical refinement:
 
-The remaining eight models, including `Order`, `Measurement`, `Payment`, and `Fitting`, do not yet have corresponding runtime API routes, server actions, or mutation pipelines.
+### A. Authentication Infrastructure
+- **Reviewer Feedback**: The reviewer requested clearer explanations of the NextAuth.js v4 configuration in `src/lib/auth.ts`, specifically highlighting the JWT session strategy, the seven-day inactivity expiration policy (`ACC-08`), role augmentation (`CUSTOMER` and `TAILOR`), and Credentials provider integration.
 
-### 2. Getting Started Instructions
+### B. Database Model Operationalization
+- **Reviewer Feedback**: The reviewer requested clarification that although the schema and baseline migration define the domain models, only the `User` model is currently queried and mutated by live application code. The remaining models, including `Order`, `Measurement`, `Payment`, and `Fitting`, do not yet have corresponding runtime API routes, server actions, or mutation pipelines.
+- **Implementation Discrepancy Note**: During source inspection to incorporate this feedback, the codebase was audited against `prisma/schema.prisma` and the baseline migration (`prisma/migrations/20261102151000_init/migration.sql`). While the reviewer referred to "nine domain models" and "remaining eight models", the schema and migration actually declare **10 models** in total:
+  1. `User`
+  2. `Business`
+  3. `Measurement`
+  4. `Order`
+  5. `OrderStatusAudit`
+  6. `Payment`
+  7. `Fitting`
+  8. `FAQDocument`
+  9. `FAQChunk`
+  10. `ContactAudit`
 
-The reviewer read through the getting-started instructions and reported:
+  Runtime code inspection confirmed that only `User` is queried or mutated at runtime. Consequently, there are **9 remaining unqueried models** rather than 8. The documentation was corrected to state the verified count of 10 total models and 9 unqueried models rather than repeating the reviewer's unverified count.
 
-> "If you wanted me to run the 'get started' part, I have not done that yet as my laptop battery is low. I read through the steps to run and it was straightforward."
+---
 
-The reviewer therefore found the instructions straightforward to read but did not execute them or attempt to run the application.
+## 4. Documentation Changes Made in Response to Feedback
 
-### 3. Outstanding Test
+In response to the reviewer's feedback, `README.md` was updated as follows:
 
-The practical setup test is still pending.
+1. **Authentication Infrastructure (`README.md` Section 2: Completed)**:
+   - Explicitly documented that NextAuth.js v4 configuration is centralized at `src/lib/auth.ts` (exported as `authOptions` and wired to `src/app/api/auth/[...nextauth]/route.ts`).
+   - Specified that the application uses a stateless JWT session strategy (`strategy: 'jwt'`).
+   - Detailed the 7-day session inactivity expiration policy (`maxAge: 7 * 24 * 60 * 60`, or 604,800 seconds) in compliance with requirement `ACC-08`.
+   - Documented role augmentation supporting both `CUSTOMER` and `TAILOR` roles via TypeScript module augmentation in `src/types/next-auth.d.ts` and callback population in `jwt` and `session` hooks.
+   - Confirmed that authentication operates through the Credentials provider with server-side Zod validation against `src/lib/validations/auth.ts` and bcrypt password hash verification against the database `User` record, returning generic errors (`ACC-07`) on failure.
 
-When the reviewer is available, they will be asked to follow the getting-started instructions independently and report any difficulties encountered.
+2. **Database Model Operationalization (`README.md` Section 2: Partially Completed)**:
+   - Renamed the section entry to **"Database Model Operationalization vs. Schema Definitions"** to establish an explicit boundary between schema structure and working application logic.
+   - Documented the verified count of 10 models declared in `prisma/schema.prisma` and `prisma/migrations/20261102151000_init/migration.sql`.
+   - Stated unequivocally that only the `User` model is queried or mutated by live application code (during customer registration in `src/app/api/auth/register/route.ts` and credential verification in `src/lib/auth.ts`).
+   - Clarified that the remaining 9 models (`Order`, `Measurement`, `Payment`, `Fitting`, `Business`, `FAQDocument`, `FAQChunk`, `OrderStatusAudit`, `ContactAudit`) exist solely as structural database definitions with no active runtime API routes, server actions, or mutation pipelines, and must not be described as operational business workflows or working features.
 
-### 4. Planned Follow-up
+---
 
-After the practical test:
+## 5. Setup Verification Status & Testing Distinction
 
-- Record the reviewer's actual setup experience and any difficulties encountered.
-- Update this document with the additional findings.
-- Revise the main README to address the confirmed clarity issues and practical testing feedback.
+An important distinction is maintained regarding the scope of testing performed:
+
+- **What occurred**: The external reviewer read the documentation and subsequently executed the application code.
+- **What did not occur**: The reviewer did not execute a documented, clean-slate, end-to-end setup test from scratch on an isolated machine (i.e. cloning the repository afresh, preparing local environment variables, running package installation, provisioning PostgreSQL, and applying database migrations from the CLI).
+- **Result**: The independent end-to-end setup walkthrough remains **unverified**.
+
+To maintain technical integrity and transparency:
+- No installation metrics, environment setup times, or database provisioning timings are claimed.
+- No unobserved errors, blockers, or hypothetical setup results are recorded.
+- A full independent setup walkthrough on a separate clean environment remains an outstanding testing objective for future release validation.
