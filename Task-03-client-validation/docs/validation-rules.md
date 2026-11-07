@@ -15,3 +15,7 @@
 *   **The rule:** Must contain an `@` character and a domain (e.g., `user@domain.com`). Validated in real-time on the sign-up form.
 *   **What goes wrong without it:** If a user types `userdomain.com` (missing the `@`), the system cannot send them the email verification code or order receipts.
 *   **Who it wrongly blocks:** No one, really. The rule only checks the *format*, not if the email actually exists. A user with a very unusual but valid email format might get blocked if our regex is too strict. 
+
+Sentence 1 hits the technical reality: Knowing an inbox exists doesn't mean the person at the keyboard owns it. You still have to send a code to prove ownership.
+
+Sentence 2 hits the security reality: If your app says "This email is already registered" on a sign-up form, an attacker can write a script to test a million emails and figure out exactly who your customers are. This is called user enumeration, and it's a major security flaw

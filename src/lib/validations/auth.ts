@@ -16,7 +16,7 @@ export const signUpSchema = z.object({
     .transform((val) => val.trim()),
   email: z
     .string()
-    .email({ message: 'Please enter a valid email address' })
+    .email({ message: 'Enter a valid email address' })
     .toLowerCase()
     .trim(),
   phone: z
@@ -39,7 +39,7 @@ export type SignUpInput = z.infer<typeof signUpSchema>;
 export const signInSchema = z.object({
   email: z
     .string()
-    .email({ message: 'Please enter a valid email address' })
+    .email({ message: 'Enter a valid email address' })
     .toLowerCase()
     .trim(),
   password: z

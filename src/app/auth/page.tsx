@@ -151,6 +151,8 @@ function TextField({
   hint,
   forceTouched = false,
   validate,
+  validateOnType = false,
+  externalError,
 }: {
   id: string;
   label: string;
@@ -165,13 +167,21 @@ function TextField({
   hint?: string;
   forceTouched?: boolean;
   validate?: (value: string) => string | null;
+  validateOnType?: boolean;
+  externalError?: string | null;
 }) {
   const [isTouched, setIsTouched] = useState(false);
 
   const isBlank = !value.trim();
-  const customError = validate ? validate(value) : null;
+  const customError = externalError || (validate ? validate(value) : null);
+  const isValidationActive =
+    Boolean(externalError) ||
+    isTouched ||
+    forceTouched ||
+    (validateOnType && !isBlank);
+
   const isInvalid = isBlank ? required : Boolean(customError);
-  const showError = (isTouched || forceTouched) && isInvalid;
+  const showError = isValidationActive && isInvalid;
   const errorMessage = isBlank
     ? 'This field is required. Please enter a value.'
     : (customError || '');
@@ -290,6 +300,19 @@ function GoogleButton({
   );
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function validateEmail(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null; // Required check handles empty values
+  }
+  if (!EMAIL_REGEX.test(trimmed)) {
+    return 'Enter a valid email address';
+  }
+  return null;
+}
+
 function LoginForm({
   callbackUrl,
   registered,
@@ -306,6 +329,7 @@ function LoginForm({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [loginEmailError, setLoginEmailError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -313,9 +337,17 @@ function LoginForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setLoginEmailError(null);
 
-    if (!email.trim() || !password.trim()) {
+    const isEmailBlank = !email.trim();
+    const isPasswordBlank = !password.trim();
+    const isEmailInvalid = !isEmailBlank && !EMAIL_REGEX.test(email.trim());
+
+    if (isEmailBlank || isPasswordBlank || isEmailInvalid) {
       setFormSubmitted(true);
+      if (isEmailInvalid) {
+        setLoginEmailError('Enter a valid email address');
+      }
       return;
     }
 
@@ -377,9 +409,15 @@ function LoginForm({
           type="email"
           autoComplete="email"
           value={email}
-          onChange={setEmail}
+          onChange={(val) => {
+            setEmail(val);
+            if (loginEmailError) {
+              setLoginEmailError(null);
+            }
+          }}
           placeholder="name@example.com"
           forceTouched={formSubmitted}
+          externalError={loginEmailError}
         />
 
         <div>
@@ -491,7 +529,15 @@ function SignUpForm({
     setError(null);
 
     const fullNameError = validateFullName(fullName);
-    if (!fullName.trim() || !email.trim() || !phone.trim() || !password.trim() || fullNameError) {
+    const emailError = validateEmail(email);
+    if (
+      !fullName.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
+      !password.trim() ||
+      fullNameError ||
+      emailError
+    ) {
       setFormSubmitted(true);
       return;
     }
@@ -591,6 +637,8 @@ function SignUpForm({
             onChange={setEmail}
             placeholder="name@example.com"
             forceTouched={formSubmitted}
+            validate={validateEmail}
+            validateOnType={true}
           />
 
           <TextField
