@@ -24,10 +24,19 @@ export async function POST(req: Request) {
     // SEC-07: Validate input on server
     const parsed = signUpSchema.safeParse(body);
     if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      const firstErrorMessage =
+        fieldErrors.fullName?.[0] ||
+        fieldErrors.email?.[0] ||
+        fieldErrors.phone?.[0] ||
+        fieldErrors.password?.[0] ||
+        fieldErrors.acceptTerms?.[0] ||
+        'Validation failed';
+
       return NextResponse.json(
         {
-          error: 'Validation failed',
-          details: parsed.error.flatten().fieldErrors,
+          error: firstErrorMessage,
+          details: fieldErrors,
         },
         { status: 400 }
       );

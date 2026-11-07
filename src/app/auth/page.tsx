@@ -4,11 +4,18 @@ import { Suspense, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import { TermsModal } from '@/components/terms/TermsModal';
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
-const INPUT_CLASSES =
-  'w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-fluid-label transition-all';
+const INPUT_BASE_CLASSES =
+  'w-full px-4 py-2.5 rounded-lg border bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 text-fluid-label transition-all';
+
+const INPUT_NORMAL_CLASSES =
+  'border-outline-variant focus:border-primary focus:ring-primary/20';
+
+const INPUT_ERROR_CLASSES =
+  'border-error focus:border-error focus:ring-error/20';
 
 const PRIMARY_BUTTON_CLASSES =
   'w-full py-3 px-4 rounded-lg bg-primary text-on-primary font-medium text-fluid-label shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2';
@@ -100,11 +107,10 @@ function FormAlert({
   return (
     <div
       role={isError ? 'alert' : 'status'}
-      className={`mb-6 p-4 rounded-lg border text-fluid-body-sm flex items-start gap-3 ${
-        isError
+      className={`mb-6 p-4 rounded-lg border text-fluid-body-sm flex items-start gap-3 ${isError
           ? 'bg-error-container/20 border-error/30 text-error'
           : 'bg-success/10 border-success/30 text-primary'
-      }`}
+        }`}
     >
       <svg
         className="w-5 h-5 flex-shrink-0 mt-0.5"
@@ -137,24 +143,45 @@ function TextField({
   type,
   value,
   onChange,
+  onBlur,
   autoComplete,
   placeholder,
   required = true,
   minLength,
   hint,
+  forceTouched = false,
+  validate,
 }: {
   id: string;
   label: string;
   type: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   autoComplete?: string;
   placeholder?: string;
   required?: boolean;
   minLength?: number;
   hint?: string;
+  forceTouched?: boolean;
+  validate?: (value: string) => string | null;
 }) {
+  const [isTouched, setIsTouched] = useState(false);
+
+  const isBlank = !value.trim();
+  const customError = validate ? validate(value) : null;
+  const isInvalid = isBlank ? required : Boolean(customError);
+  const showError = (isTouched || forceTouched) && isInvalid;
+  const errorMessage = isBlank
+    ? 'This field is required. Please enter a value.'
+    : (customError || '');
   const hintId = hint ? `${id}-hint` : undefined;
+  const errorId = `${id}-error`;
+
+  const handleBlur = () => {
+    setIsTouched(true);
+    onBlur?.();
+  };
 
   return (
     <div>
@@ -172,15 +199,39 @@ function TextField({
         minLength={minLength}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={handleBlur}
         placeholder={placeholder}
-        aria-describedby={hintId}
-        className={INPUT_CLASSES}
+        aria-invalid={showError}
+        aria-describedby={showError ? errorId : hintId}
+        className={`${INPUT_BASE_CLASSES} ${
+          showError ? INPUT_ERROR_CLASSES : INPUT_NORMAL_CLASSES
+        }`}
       />
-      {hint && (
+      {showError ? (
+        <p
+          id={errorId}
+          role="alert"
+          className="mt-1.5 text-fluid-badge text-error flex items-center gap-1.5 font-medium animate-in fade-in duration-150"
+        >
+          <svg
+            className="w-3.5 h-3.5 flex-shrink-0"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{errorMessage}</span>
+        </p>
+      ) : hint ? (
         <span id={hintId} className="text-fluid-badge text-secondary mt-1 block">
           {hint}
         </span>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -254,6 +305,7 @@ function LoginForm({
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -261,6 +313,12 @@ function LoginForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    if (!email.trim() || !password.trim()) {
+      setFormSubmitted(true);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -312,7 +370,7 @@ function LoginForm({
 
       {error && <FormAlert tone="error">{error}</FormAlert>}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <TextField
           id="email"
           label="Email address"
@@ -321,6 +379,7 @@ function LoginForm({
           value={email}
           onChange={setEmail}
           placeholder="name@example.com"
+          forceTouched={formSubmitted}
         />
 
         <div>
@@ -332,6 +391,7 @@ function LoginForm({
             value={password}
             onChange={setPassword}
             placeholder="••••••••"
+            forceTouched={formSubmitted}
           />
           <div className="mt-2 text-right">
             <Link
@@ -376,8 +436,34 @@ function LoginForm({
           Create customer account
         </Link>
       </div>
+
+      <div className="mt-4 text-center text-fluid-badge text-secondary">
+        <Link
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline hover:text-primary transition-colors"
+        >
+          Terms &amp; Conditions
+        </Link>
+      </div>
     </AuthFrame>
   );
+}
+
+function validateFullName(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null; // Required check handles empty values
+  }
+  if (trimmed.length < 2) {
+    return 'Full name must be at least 2 characters.';
+  }
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length < 2) {
+    return 'Please enter at least 2 names separated by a space (e.g. Jane Doe).';
+  }
+  return null;
 }
 
 function SignUpForm({
@@ -393,6 +479,9 @@ function SignUpForm({
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -400,6 +489,18 @@ function SignUpForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    const fullNameError = validateFullName(fullName);
+    if (!fullName.trim() || !email.trim() || !phone.trim() || !password.trim() || fullNameError) {
+      setFormSubmitted(true);
+      return;
+    }
+
+    if (!acceptTerms) {
+      setError('You must read and agree to the Terms & Conditions to create an account.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -411,6 +512,7 @@ function SignUpForm({
           email: email.trim().toLowerCase(),
           phone: phone.trim(),
           password,
+          acceptTerms: true,
         }),
       });
 
@@ -459,99 +561,142 @@ function SignUpForm({
   const isBusy = isLoading || isGoogleLoading;
 
   return (
-    <AuthFrame
-      title="Create customer account"
-      description="Store your body measurements, commission bespoke garments, and track order progress"
-    >
-      {error && <FormAlert tone="error">{error}</FormAlert>}
+    <>
+      <AuthFrame
+        title="Create customer account"
+        description="Store your body measurements, commission bespoke garments, and track order progress"
+      >
+        {error && <FormAlert tone="error">{error}</FormAlert>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <TextField
-          id="fullName"
-          label="Full name"
-          type="text"
-          autoComplete="name"
-          value={fullName}
-          onChange={setFullName}
-          placeholder="Jane Doe"
-          minLength={2}
-        />
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <TextField
+            id="fullName"
+            label="Full name"
+            type="text"
+            autoComplete="name"
+            value={fullName}
+            onChange={setFullName}
+            placeholder="Jane Doe"
+            minLength={2}
+            forceTouched={formSubmitted}
+            validate={validateFullName}
+          />
 
-        <TextField
-          id="email"
-          label="Email address"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={setEmail}
-          placeholder="name@example.com"
-        />
+          <TextField
+            id="email"
+            label="Email address"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="name@example.com"
+            forceTouched={formSubmitted}
+          />
 
-        <TextField
-          id="phone"
-          label="Phone number"
-          type="tel"
-          autoComplete="tel"
-          value={phone}
-          onChange={setPhone}
-          placeholder="+234 801 234 5678"
-        />
+          <TextField
+            id="phone"
+            label="Phone number"
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={setPhone}
+            placeholder="+234 801 234 5678"
+            forceTouched={formSubmitted}
+          />
 
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          autoComplete="new-password"
-          value={password}
-          onChange={setPassword}
-          placeholder="At least 8 characters"
-          minLength={8}
-          hint="Must be at least 8 characters"
-        />
+          <TextField
+            id="password"
+            label="Password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={setPassword}
+            placeholder="At least 8 characters"
+            minLength={8}
+            hint="Must be at least 8 characters"
+            forceTouched={formSubmitted}
+          />
 
-        <button
-          type="submit"
-          disabled={isBusy}
-          className={`mt-2 ${PRIMARY_BUTTON_CLASSES}`}
-        >
-          {isLoading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
-              <span>Creating account...</span>
-            </>
-          ) : (
-            'Create Account'
-          )}
-        </button>
-      </form>
+          {/* Terms & Conditions Checkbox */}
+          <div className="pt-2">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-surface-container/60 border border-outline-variant/60">
+              <input
+                id="acceptTerms"
+                name="acceptTerms"
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20 accent-primary cursor-pointer"
+              />
+              <label htmlFor="acceptTerms" className="text-fluid-badge text-secondary leading-snug cursor-pointer select-none">
+                I have read and agree to Tayhlor&apos;s{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-primary font-semibold underline hover:opacity-80 inline transition-opacity focus:outline-none"
+                >
+                  Terms &amp; Conditions
+                </button>
+                {' '}and acknowledge the bespoke order and data protection terms.
+              </label>
+            </div>
+          </div>
 
-      <OrDivider label="Or sign up with" />
+          <button
+            type="submit"
+            disabled={isBusy || !acceptTerms}
+            className={`mt-2 ${PRIMARY_BUTTON_CLASSES} ${!acceptTerms ? 'opacity-40 cursor-not-allowed hover:opacity-40 shadow-none' : ''
+              }`}
+          >
+            {isLoading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
+                <span>Creating account...</span>
+              </>
+            ) : (
+              'Create Account'
+            )}
+          </button>
+        </form>
 
-      <div className="mt-6">
-        <GoogleButton
-          onClick={handleGoogleSignIn}
-          disabled={isBusy}
-          isLoading={isGoogleLoading}
-        />
-      </div>
+        <OrDivider label="Or sign up with" />
 
-      <p className="mt-6 text-fluid-badge text-secondary text-center">
-        By creating an account, you acknowledge that your order and measurement data remain
-        securely stored within Tayhlor. See our{' '}
-        <span className="text-primary font-medium underline">Privacy Notice</span> (FR-73).
-      </p>
+        <div className="mt-6">
+          <GoogleButton
+            onClick={handleGoogleSignIn}
+            disabled={isBusy}
+            isLoading={isGoogleLoading}
+          />
+        </div>
 
-      <div className="mt-8 text-center text-fluid-body-sm text-secondary">
-        Already have an account?{' '}
-        <Link
-          href={signInHref}
-          scroll={false}
-          className="text-primary font-semibold hover:underline transition-all"
-        >
-          Sign in here
-        </Link>
-      </div>
-    </AuthFrame>
+        <p className="mt-6 text-fluid-badge text-secondary text-center">
+          By creating an account, you acknowledge that your order and measurement data remain
+          securely stored within Tayhlor. See our{' '}
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary font-medium underline">
+            Terms &amp; Privacy Notice
+          </Link>{' '}
+          (FR-73).
+        </p>
+
+        <div className="mt-8 text-center text-fluid-body-sm text-secondary">
+          Already have an account?{' '}
+          <Link
+            href={signInHref}
+            scroll={false}
+            className="text-primary font-semibold hover:underline transition-all"
+          >
+            Sign in here
+          </Link>
+        </div>
+      </AuthFrame>
+
+      {/* Terms & Conditions Modal */}
+      <TermsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onAccept={() => setAcceptTerms(true)}
+      />
+    </>
   );
 }
 
