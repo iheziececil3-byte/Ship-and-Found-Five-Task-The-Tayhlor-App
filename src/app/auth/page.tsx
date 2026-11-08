@@ -67,7 +67,7 @@ function AuthFrame({
   children,
 }: {
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
 }) {
   return (
@@ -77,7 +77,9 @@ function AuthFrame({
         <h2 className="mt-6 font-display font-semibold text-fluid-headline-lg text-primary">
           {title}
         </h2>
-        <p className="mt-2 text-fluid-body-sm text-secondary">{description}</p>
+        {description && (
+          <p className="mt-2 text-fluid-body-sm text-secondary">{description}</p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
@@ -559,26 +561,44 @@ function SignUpForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isBusy) return;
     setError(null);
 
     const fullNameError = validateFullName(fullName);
     const emailError = validateEmail(email);
     const phoneError = validatePhone(phone);
+
+    const isFullNameInvalid = !fullName.trim() || Boolean(fullNameError);
+    const isEmailInvalid = !email.trim() || Boolean(emailError);
+    const isPhoneInvalid = !phone.trim() || Boolean(phoneError);
+    const isPasswordInvalid = !password.trim();
+
     if (
-      !fullName.trim() ||
-      !email.trim() ||
-      !phone.trim() ||
-      !password.trim() ||
-      fullNameError ||
-      emailError ||
-      phoneError
+      isFullNameInvalid ||
+      isEmailInvalid ||
+      isPhoneInvalid ||
+      isPasswordInvalid
     ) {
       setFormSubmitted(true);
+      const firstInvalidId = isFullNameInvalid
+        ? 'fullName'
+        : isEmailInvalid
+        ? 'email'
+        : isPhoneInvalid
+        ? 'phone'
+        : 'password';
+
+      setTimeout(() => {
+        document.getElementById(firstInvalidId)?.focus();
+      }, 0);
       return;
     }
 
     if (!acceptTerms) {
       setError('You must read and agree to the Terms & Conditions to create an account.');
+      setTimeout(() => {
+        document.getElementById('acceptTerms')?.focus();
+      }, 0);
       return;
     }
 
@@ -643,10 +663,7 @@ function SignUpForm({
 
   return (
     <>
-      <AuthFrame
-        title="Create customer account"
-        description="Store your body measurements, commission bespoke garments, and track order progress"
-      >
+      <AuthFrame title="Create customer account">
         {error && <FormAlert tone="error">{error}</FormAlert>}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -696,9 +713,8 @@ function SignUpForm({
             autoComplete="new-password"
             value={password}
             onChange={setPassword}
-            placeholder="At least 8 characters"
+            placeholder="Password"
             minLength={8}
-            hint="Must be at least 8 characters"
             forceTouched={formSubmitted}
           />
 
@@ -713,25 +729,37 @@ function SignUpForm({
                 onChange={(e) => setAcceptTerms(e.target.checked)}
                 className="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20 accent-primary cursor-pointer"
               />
-              <label htmlFor="acceptTerms" className="text-fluid-badge text-secondary leading-snug cursor-pointer select-none">
-                I have read and agree to Tayhlor&apos;s{' '}
+              <div className="text-fluid-badge text-secondary leading-snug">
+                <label htmlFor="acceptTerms" className="cursor-pointer select-none">
+                  I have read and agree to Tayhlor&apos;s{' '}
+                </label>
                 <button
+                  id="terms-button"
                   type="button"
-                  onClick={() => setIsTermsModalOpen(true)}
-                  className="text-primary font-semibold underline hover:opacity-80 inline transition-opacity focus:outline-none"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsTermsModalOpen(true);
+                  }}
+                  className="text-primary font-semibold underline hover:opacity-80 inline transition-opacity focus:outline-none focus:underline"
                 >
                   Terms &amp; Conditions
                 </button>
-                {' '}and acknowledge the bespoke order and data protection terms.
-              </label>
+                <label htmlFor="acceptTerms" className="cursor-pointer select-none">
+                  {' '}and acknowledge the bespoke order and data protection terms.
+                </label>
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={isBusy || !acceptTerms}
-            className={`mt-2 ${PRIMARY_BUTTON_CLASSES} ${!acceptTerms ? 'opacity-40 cursor-not-allowed hover:opacity-40 shadow-none' : ''
-              }`}
+            aria-disabled={!acceptTerms || isBusy}
+            aria-describedby={!acceptTerms ? 'submit-terms-hint' : undefined}
+            className={`mt-2 ${PRIMARY_BUTTON_CLASSES} ${
+              !acceptTerms || isBusy
+                ? 'opacity-40 cursor-not-allowed hover:opacity-40 shadow-none'
+                : ''
+            }`}
           >
             {isLoading ? (
               <>
@@ -742,6 +770,11 @@ function SignUpForm({
               'Create Account'
             )}
           </button>
+          {!acceptTerms && (
+            <span id="submit-terms-hint" className="sr-only">
+              Please read and agree to the Terms &amp; Conditions to enable account creation.
+            </span>
+          )}
         </form>
 
         <OrDivider label="Or sign up with" />

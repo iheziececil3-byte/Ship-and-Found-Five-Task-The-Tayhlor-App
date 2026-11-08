@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { TermsContent } from './TermsContent';
 
@@ -11,16 +11,81 @@ interface TermsModalProps {
 }
 
 export function TermsModal({ isOpen, onClose, onAccept }: TermsModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (isOpen) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
       document.body.style.overflow = 'hidden';
+
+      const focusableSelector =
+        'button:not([disabled]), a[href]:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+      const getFocusableElements = (): HTMLElement[] => {
+        if (!dialogRef.current) return [];
+        return Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector)
+        ).filter(
+          (el) => el.offsetParent !== null || el.getClientRects().length > 0
+        );
+      };
+
+      // Set initial focus inside dialog
+      const timer = setTimeout(() => {
+        const focusables = getFocusableElements();
+        if (focusables.length > 0) {
+          focusables[0].focus();
+        } else {
+          dialogRef.current?.focus();
+        }
+      }, 50);
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+
+        if (event.key === 'Tab') {
+          const focusables = getFocusableElements();
+          if (focusables.length === 0) {
+            event.preventDefault();
+            return;
+          }
+
+          const firstElement = focusables[0];
+          const lastElement = focusables[focusables.length - 1];
+
+          if (event.shiftKey) {
+            if (document.activeElement === firstElement) {
+              event.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              event.preventDefault();
+              firstElement.focus();
+            }
+          }
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        clearTimeout(timer);
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+        if (previousActiveElementRef.current) {
+          previousActiveElementRef.current.focus();
+        }
+      };
     } else {
       document.body.style.overflow = 'unset';
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -39,7 +104,11 @@ export function TermsModal({ isOpen, onClose, onAccept }: TermsModalProps) {
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-2xl max-h-[85vh] bg-surface rounded-2xl border border-outline-variant shadow-hard flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="relative w-full max-w-2xl max-h-[85vh] bg-surface rounded-2xl border border-outline-variant shadow-hard flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150 focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface">
           <div>
