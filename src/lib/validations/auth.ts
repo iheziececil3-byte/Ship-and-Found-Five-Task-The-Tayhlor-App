@@ -21,10 +21,28 @@ export const signUpSchema = z.object({
     .trim(),
   phone: z
     .string()
-    .min(7, { message: 'Please enter a valid phone number' })
-    .max(20, { message: 'Phone number is too long' })
-    .regex(/^[+0-9\s\-()]+$/, { message: 'Invalid characters in phone number' })
-    .trim(),
+    .trim()
+    .transform((val) => val.replace(/\s+/g, ''))
+    .refine(
+      (val) => {
+        if (/^0\d{10}$/.test(val)) return true;
+        if (/^\+234\d{10}$/.test(val)) return true;
+        if (/^234\d{10}$/.test(val)) return true;
+        return false;
+      },
+      {
+        message: 'Phone number must be an 11-digit Nigerian number (e.g., 0908 116 6271)',
+      }
+    )
+    .transform((val) => {
+      if (/^0\d{10}$/.test(val)) {
+        return `+234${val.slice(1)}`;
+      }
+      if (/^234\d{10}$/.test(val)) {
+        return `+${val}`;
+      }
+      return val;
+    }),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' })

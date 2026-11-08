@@ -108,8 +108,8 @@ function FormAlert({
     <div
       role={isError ? 'alert' : 'status'}
       className={`mb-6 p-4 rounded-lg border text-fluid-body-sm flex items-start gap-3 ${isError
-          ? 'bg-error-container/20 border-error/30 text-error'
-          : 'bg-success/10 border-success/30 text-primary'
+        ? 'bg-error-container/20 border-error/30 text-error'
+        : 'bg-success/10 border-success/30 text-primary'
         }`}
     >
       <svg
@@ -145,6 +145,7 @@ function TextField({
   onChange,
   onBlur,
   autoComplete,
+  inputMode,
   placeholder,
   required = true,
   minLength,
@@ -156,11 +157,12 @@ function TextField({
 }: {
   id: string;
   label: string;
-  type: string;
+  type?: string;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   placeholder?: string;
   required?: boolean;
   minLength?: number;
@@ -204,6 +206,7 @@ function TextField({
       <input
         id={id}
         type={type}
+        inputMode={inputMode}
         autoComplete={autoComplete}
         required={required}
         minLength={minLength}
@@ -213,9 +216,8 @@ function TextField({
         placeholder={placeholder}
         aria-invalid={showError}
         aria-describedby={showError ? errorId : hintId}
-        className={`${INPUT_BASE_CLASSES} ${
-          showError ? INPUT_ERROR_CLASSES : INPUT_NORMAL_CLASSES
-        }`}
+        className={`${INPUT_BASE_CLASSES} ${showError ? INPUT_ERROR_CLASSES : INPUT_NORMAL_CLASSES
+          }`}
       />
       {showError ? (
         <p
@@ -504,6 +506,18 @@ function validateFullName(value: string): string | null {
   return null;
 }
 
+function validatePhone(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  if (digits.length !== 11 || !digits.startsWith('0')) {
+    return 'Phone number must be an 11-digit Nigerian number (e.g., 0908 116 6271)';
+  }
+  return null;
+}
+
 function SignUpForm({
   callbackUrl,
   signInHref,
@@ -524,19 +538,40 @@ function SignUpForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const handlePhoneChange = (val: string) => {
+    // Strip out all letters and symbols, allowing only digits and spaces
+    const cleanChars = val.replace(/[^\d\s]/g, '');
+
+    // Limit numbers to 11 digits maximum while allowing user to type spaces
+    let digits = 0;
+    let result = '';
+    for (const char of cleanChars) {
+      if (/\d/.test(char)) {
+        if (digits >= 11) break;
+        digits++;
+        result += char;
+      } else if (char === ' ') {
+        result += char;
+      }
+    }
+    setPhone(result);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
     const fullNameError = validateFullName(fullName);
     const emailError = validateEmail(email);
+    const phoneError = validatePhone(phone);
     if (
       !fullName.trim() ||
       !email.trim() ||
       !phone.trim() ||
       !password.trim() ||
       fullNameError ||
-      emailError
+      emailError ||
+      phoneError
     ) {
       setFormSubmitted(true);
       return;
@@ -645,11 +680,13 @@ function SignUpForm({
             id="phone"
             label="Phone number"
             type="tel"
+            inputMode="numeric"
             autoComplete="tel"
             value={phone}
-            onChange={setPhone}
-            placeholder="+234 801 234 5678"
+            onChange={handlePhoneChange}
+            placeholder="0908 116 6271"
             forceTouched={formSubmitted}
+            validate={validatePhone}
           />
 
           <TextField
