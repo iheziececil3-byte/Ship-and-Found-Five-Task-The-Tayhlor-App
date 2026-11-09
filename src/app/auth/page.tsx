@@ -145,6 +145,7 @@ function TextField({
   type,
   value,
   onChange,
+  onFocus,
   onBlur,
   autoComplete,
   inputMode,
@@ -152,6 +153,8 @@ function TextField({
   required = true,
   minLength,
   hint,
+  showHintOnFocusOrType = false,
+  showPasswordToggle = false,
   forceTouched = false,
   validate,
   validateOnType = false,
@@ -162,6 +165,7 @@ function TextField({
   type?: string;
   value: string;
   onChange: (value: string) => void;
+  onFocus?: () => void;
   onBlur?: () => void;
   autoComplete?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
@@ -169,12 +173,16 @@ function TextField({
   required?: boolean;
   minLength?: number;
   hint?: string;
+  showHintOnFocusOrType?: boolean;
+  showPasswordToggle?: boolean;
   forceTouched?: boolean;
   validate?: (value: string) => string | null;
   validateOnType?: boolean;
   externalError?: string | null;
 }) {
   const [isTouched, setIsTouched] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isBlank = !value.trim();
   const customError = externalError || (validate ? validate(value) : null);
@@ -189,13 +197,29 @@ function TextField({
   const errorMessage = isBlank
     ? 'This field is required. Please enter a value.'
     : (customError || '');
-  const hintId = hint ? `${id}-hint` : undefined;
+  const isHintVisible = Boolean(
+    hint && (!showHintOnFocusOrType || isFocused || value.length > 0)
+  );
+  const hintId = isHintVisible ? `${id}-hint` : undefined;
   const errorId = `${id}-error`;
 
+  const handleFocus = () => {
+    setIsFocused(true);
+    onFocus?.();
+  };
+
   const handleBlur = () => {
+    setIsFocused(false);
     setIsTouched(true);
     onBlur?.();
   };
+
+  const inputType =
+    type === 'password' && showPasswordToggle
+      ? showPassword
+        ? 'text'
+        : 'password'
+      : type;
 
   return (
     <div>
@@ -205,22 +229,75 @@ function TextField({
       >
         {label}
       </label>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        required={required}
-        minLength={minLength}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onBlur={handleBlur}
-        placeholder={placeholder}
-        aria-invalid={showError}
-        aria-describedby={showError ? errorId : hintId}
-        className={`${INPUT_BASE_CLASSES} ${showError ? INPUT_ERROR_CLASSES : INPUT_NORMAL_CLASSES
-          }`}
-      />
+      <div className="relative">
+        <input
+          id={id}
+          type={inputType}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          required={required}
+          minLength={minLength}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          aria-invalid={showError}
+          aria-describedby={showError ? errorId : hintId}
+          className={`${INPUT_BASE_CLASSES} ${
+            showPasswordToggle ? 'pr-11' : ''
+          } ${showError ? INPUT_ERROR_CLASSES : INPUT_NORMAL_CLASSES}`}
+        />
+        {type === 'password' && showPasswordToggle && (
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+              className="pointer-events-auto p-1.5 rounded-md text-secondary hover:text-primary hover:bg-surface-container/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 !transform-none hover:!transform-none active:!transform-none hover:!filter-none active:!filter-none"
+            >
+              {showPassword ? (
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
       {showError ? (
         <p
           id={errorId}
@@ -241,7 +318,7 @@ function TextField({
           </svg>
           <span>{errorMessage}</span>
         </p>
-      ) : hint ? (
+      ) : isHintVisible ? (
         <span id={hintId} className="text-fluid-badge text-secondary mt-1 block">
           {hint}
         </span>
@@ -520,6 +597,17 @@ function validatePhone(value: string): string | null {
   return null;
 }
 
+function validatePassword(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null; // Handled by required empty check
+  }
+  if (trimmed.length < 8) {
+    return 'Password must be at least 8 characters';
+  }
+  return null;
+}
+
 function SignUpForm({
   callbackUrl,
   signInHref,
@@ -534,6 +622,7 @@ function SignUpForm({
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsError, setTermsError] = useState<string | null>(null);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -564,11 +653,12 @@ function SignUpForm({
   const fullNameError = validateFullName(fullName);
   const emailError = validateEmail(email);
   const phoneError = validatePhone(phone);
+  const passwordError = validatePassword(password);
 
   const isFullNameInvalid = !fullName.trim() || Boolean(fullNameError);
   const isEmailInvalid = !email.trim() || Boolean(emailError);
   const isPhoneInvalid = !phone.trim() || Boolean(phoneError);
-  const isPasswordInvalid = !password.trim();
+  const isPasswordInvalid = !password.trim() || Boolean(passwordError);
 
   const isFormInvalid =
     isFullNameInvalid ||
@@ -577,13 +667,20 @@ function SignUpForm({
     isPasswordInvalid ||
     !acceptTerms;
 
+  const isFormValid = !isFormInvalid;
   const isAriaDisabled = isFormInvalid || isBusy;
+
+  const handleButtonClick = () => {
+    if (!acceptTerms) {
+      setTermsError('You must accept the Terms & Conditions to create an account.');
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isBusy || !acceptTerms) {
       if (!acceptTerms) {
-        setError('You must read and agree to the Terms & Conditions to create an account.');
+        setTermsError('You must accept the Terms & Conditions to create an account.');
         setTimeout(() => {
           document.getElementById('acceptTerms')?.focus();
         }, 0);
@@ -724,7 +821,11 @@ function SignUpForm({
             onChange={setPassword}
             placeholder="Password"
             minLength={8}
+            hint="Must be at least 8 characters"
+            showHintOnFocusOrType={true}
+            showPasswordToggle={true}
             forceTouched={formSubmitted}
+            validate={validatePassword}
           />
 
           {/* Terms & Conditions Checkbox */}
@@ -735,7 +836,12 @@ function SignUpForm({
                 name="acceptTerms"
                 type="checkbox"
                 checked={acceptTerms}
-                onChange={(e) => setAcceptTerms(e.target.checked)}
+                onChange={(e) => {
+                  setAcceptTerms(e.target.checked);
+                  if (e.target.checked) {
+                    setTermsError(null);
+                  }
+                }}
                 className="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/20 accent-primary cursor-pointer"
               />
               <div className="text-fluid-badge text-secondary leading-snug">
@@ -762,11 +868,18 @@ function SignUpForm({
 
           <button
             type="submit"
+            onClick={handleButtonClick}
             aria-disabled={isAriaDisabled}
-            aria-describedby={isAriaDisabled ? 'terms-button-hint' : undefined}
+            aria-describedby={
+              termsError
+                ? 'terms-click-error'
+                : isAriaDisabled
+                ? 'terms-button-hint'
+                : undefined
+            }
             className={`mt-2 ${PRIMARY_BUTTON_CLASSES} ${
               isAriaDisabled
-                ? 'opacity-50 pointer-events-none cursor-not-allowed shadow-none'
+                ? 'opacity-50 cursor-not-allowed shadow-none hover:opacity-50 hover:shadow-none !transform-none hover:!transform-none active:!transform-none hover:!filter-none active:!filter-none'
                 : ''
             }`}
           >
@@ -779,6 +892,29 @@ function SignUpForm({
               'Create Account'
             )}
           </button>
+
+          {termsError && (
+            <p
+              id="terms-click-error"
+              role="alert"
+              className="mt-2 text-fluid-badge text-error flex items-center gap-1.5 font-medium animate-in fade-in duration-150"
+            >
+              <svg
+                className="w-3.5 h-3.5 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>{termsError}</span>
+            </p>
+          )}
+
           <span id="terms-button-hint" className="sr-only">
             You must accept the terms and conditions to enable this button
           </span>
@@ -819,7 +955,10 @@ function SignUpForm({
       <TermsModal
         isOpen={isTermsModalOpen}
         onClose={() => setIsTermsModalOpen(false)}
-        onAccept={() => setAcceptTerms(true)}
+        onAccept={() => {
+          setAcceptTerms(true);
+          setTermsError(null);
+        }}
       />
     </>
   );
