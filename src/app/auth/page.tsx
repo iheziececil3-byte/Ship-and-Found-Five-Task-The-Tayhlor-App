@@ -338,6 +338,8 @@ function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const isBusy = isLoading || isGoogleLoading;
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -390,8 +392,6 @@ function LoginForm({
       setIsGoogleLoading(false);
     });
   };
-
-  const isBusy = isLoading || isGoogleLoading;
 
   return (
     <AuthFrame
@@ -540,6 +540,8 @@ function SignUpForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const isBusy = isLoading || isGoogleLoading;
+
   const handlePhoneChange = (val: string) => {
     // Strip out all letters and symbols, allowing only digits and spaces
     const cleanChars = val.replace(/[^\d\s]/g, '');
@@ -559,19 +561,36 @@ function SignUpForm({
     setPhone(result);
   };
 
+  const fullNameError = validateFullName(fullName);
+  const emailError = validateEmail(email);
+  const phoneError = validatePhone(phone);
+
+  const isFullNameInvalid = !fullName.trim() || Boolean(fullNameError);
+  const isEmailInvalid = !email.trim() || Boolean(emailError);
+  const isPhoneInvalid = !phone.trim() || Boolean(phoneError);
+  const isPasswordInvalid = !password.trim();
+
+  const isFormInvalid =
+    isFullNameInvalid ||
+    isEmailInvalid ||
+    isPhoneInvalid ||
+    isPasswordInvalid ||
+    !acceptTerms;
+
+  const isAriaDisabled = isFormInvalid || isBusy;
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isBusy) return;
+    if (isBusy || !acceptTerms) {
+      if (!acceptTerms) {
+        setError('You must read and agree to the Terms & Conditions to create an account.');
+        setTimeout(() => {
+          document.getElementById('acceptTerms')?.focus();
+        }, 0);
+      }
+      return;
+    }
     setError(null);
-
-    const fullNameError = validateFullName(fullName);
-    const emailError = validateEmail(email);
-    const phoneError = validatePhone(phone);
-
-    const isFullNameInvalid = !fullName.trim() || Boolean(fullNameError);
-    const isEmailInvalid = !email.trim() || Boolean(emailError);
-    const isPhoneInvalid = !phone.trim() || Boolean(phoneError);
-    const isPasswordInvalid = !password.trim();
 
     if (
       isFullNameInvalid ||
@@ -590,14 +609,6 @@ function SignUpForm({
 
       setTimeout(() => {
         document.getElementById(firstInvalidId)?.focus();
-      }, 0);
-      return;
-    }
-
-    if (!acceptTerms) {
-      setError('You must read and agree to the Terms & Conditions to create an account.');
-      setTimeout(() => {
-        document.getElementById('acceptTerms')?.focus();
       }, 0);
       return;
     }
@@ -658,8 +669,6 @@ function SignUpForm({
       setIsGoogleLoading(false);
     });
   };
-
-  const isBusy = isLoading || isGoogleLoading;
 
   return (
     <>
@@ -753,11 +762,11 @@ function SignUpForm({
 
           <button
             type="submit"
-            aria-disabled={!acceptTerms || isBusy}
-            aria-describedby={!acceptTerms ? 'submit-terms-hint' : undefined}
+            aria-disabled={isAriaDisabled}
+            aria-describedby={isAriaDisabled ? 'terms-button-hint' : undefined}
             className={`mt-2 ${PRIMARY_BUTTON_CLASSES} ${
-              !acceptTerms || isBusy
-                ? 'opacity-40 cursor-not-allowed hover:opacity-40 shadow-none'
+              isAriaDisabled
+                ? 'opacity-50 pointer-events-none cursor-not-allowed shadow-none'
                 : ''
             }`}
           >
@@ -770,11 +779,9 @@ function SignUpForm({
               'Create Account'
             )}
           </button>
-          {!acceptTerms && (
-            <span id="submit-terms-hint" className="sr-only">
-              Please read and agree to the Terms &amp; Conditions to enable account creation.
-            </span>
-          )}
+          <span id="terms-button-hint" className="sr-only">
+            You must accept the terms and conditions to enable this button
+          </span>
         </form>
 
         <OrDivider label="Or sign up with" />
