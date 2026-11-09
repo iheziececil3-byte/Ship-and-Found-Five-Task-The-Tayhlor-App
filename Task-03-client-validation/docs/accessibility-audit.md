@@ -1,9 +1,5 @@
 # Accessibility Audit
 
-*(Keep the "Problems Found and Fixed" section that we already wrote here)*
-
----
-
 # Field-by-Field Written Audit
 
 I audited every field against the five criteria to ensure the form is usable without a mouse or visual color cues.
@@ -49,3 +45,25 @@ I audited every field against the five criteria to ensure the form is usable wit
 *   **Focus visibility:** Pass. The focus ring is visible.
 *   **Screen reader announcement:** Pass. Narrator reads: *"it couldnt see it when i tab"*
 *   **Error association:** N/A (Submit buttons do not have inline errors).
+
+
+## Part 2: The Four Fixes(After fixes)
+
+### 1. Error Announcement (Screen Reader)
+*   **The Problem:** When a field had an error, the red border appeared, but the screen reader did not announce the error message when the user tabbed to the field.
+*   **The Fix:** Added `aria-describedby` pointing to the error text ID, and `aria-invalid="true"` to the input.
+*   **Screen Reader Transcript (After Fix):** *"Full name, edit, Jane Doe required. Please enter at least 2 names separated by a space."*
+
+### 2. Color Independence
+*   **The Problem:** Errors were only indicated by a red border. Users with red-green color blindness would not see the error state.
+*   **The Fix:** Added a red caution icon (an exclamation mark SVG) next to every inline error message, ensuring color is not the only indicator.
+
+### 3. Disabled Button Tab Order
+*   **The Problem:** The "Create Account" button used the native HTML `disabled` attribute. Screen readers skip disabled buttons entirely. A blind user would tab past the button and think there was no way to submit the form.
+*   **The Fix:** Removed the native `disabled` attribute and replaced it with `aria-disabled="true"`. Added CSS to make it look disabled and prevent mouse clicks, but kept it focusable via keyboard. Added `aria-describedby` to explain why it is disabled.
+*   **Screen Reader Transcript (After Fix):** *"Create Account, button. You must accept the terms and conditions to enable this button. Disabled"*
+
+### 4. Password Requirements Association
+*   **The Problem:** The password requirements (8 characters) were removed from the visual UI to stop leaking data shape, meaning screen reader users had no idea what the requirements were until they submitted and failed.
+*   **The Fix:** Added an `aria-describedby` to the password field that reads the requirement to the screen reader once the user focuses the field, without displaying it visually to attackers.
+**Screen reader announcement:** Pass. Narrator reads: *"Password, edit, required, has pop up.password"*
