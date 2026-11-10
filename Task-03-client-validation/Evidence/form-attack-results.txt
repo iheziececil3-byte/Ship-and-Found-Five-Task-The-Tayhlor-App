@@ -1,0 +1,15 @@
+Through the form (Client-Side Attack)
+
+With server-side Zod validation removed, I attempted to bypass the React client-side 
+validation using malformed data.
+
+1. Full Name: Tried "aaaaa..." (single long word, no space) - BLOCKED. 
+Inline error appeared.
+2. Email: Tried "a@b" - BLOCKED. Inline error appeared.
+3. Phone: left white spaces and added random numbers - BLOCKED. Required field error appeared.
+4. Password: Typed white spaces - The UI accepted the length, but the form failed to submit because 
+of the other errors.
+
+Conclusion: The React frontend successfully prevented the form from submitting malformed data 
+to the server. However, this only proves the UI works for human users. 
+It does not prove the server is secure against direct attacks.

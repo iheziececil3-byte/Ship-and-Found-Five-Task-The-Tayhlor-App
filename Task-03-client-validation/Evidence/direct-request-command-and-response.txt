@@ -1,0 +1,7 @@
+Around the form (Direct API Attack)
+
+The exact command:
+curl.exe -X POST http://localhost:3000/api/auth/register -H "Content-Type: application/json" -d "@attack.json"
+
+The server's response:
+{"message":"Account created successfully.","user":{"id":"cmwakbd6s0000qbxg2ayhsaca","fullName":"a","email":"a@b","role":"CUSTOMER","createdAt":"2026-11-10T10:43:49.252Z"}}
