@@ -1,0 +1,37 @@
+Step 9: Roll Back Without Hallucination - Terminal Evidence
+
+1. Temporary "regretted" commit created before rollback:
+> git commit -m "temp(auth): remove server-side zod validation for testing"
+[master e6f8742] temp(auth): remove server-side zod validation for testing
+ 2 files changed, 14 insertions(+), 29 deletions(-)
+
+2. Commit list inspected before rollback:
+> git log -n 6 --oneline
+e6f8742 temp(auth): remove server-side zod validation for testing
+95e6cc8 docs(task-03): add step 8 attack evidence and client-side-is-not-security report
+3a3d124 feat(auth): add disabled submit button with terms click feedback and update validation docs
+ca20efd docs(task-03): update accessibility audit with after-fix transcripts and normalize evidence extensions
+5ac75bb feat(a11y): replace native disabled with aria-disabled and screen-reader hint on submit button
+8dcbb82 docs(task-03): add accessibility audit, enumeration documentation, and screen reader evidence
+
+3. Specific commit ID chosen for rollback:
+95e6cc8
+
+4. Rollback command executed:
+> git reset --hard 95e6cc8
+HEAD is now at 95e6cc8 docs(task-03): add step 8 attack evidence and client-side-is-not-security report
+
+5. Verification after rollback:
+> git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+> git log -n 4 --oneline
+95e6cc8 docs(task-03): add step 8 attack evidence and client-side-is-not-security report
+3a3d124 feat(auth): add disabled submit button with terms click feedback and update validation docs
+ca20efd docs(task-03): update accessibility audit with after-fix transcripts and normalize evidence extensions
+5ac75bb feat(a11y): replace native disabled with aria-disabled and screen-reader hint on submit button
+
