@@ -1,0 +1,48 @@
+### How I Verified the Database State
+
+I verified the database using **Prisma Studio**, Prisma's visual database inspector, and the Prisma migration status command.
+
+**1. Visual inspection using Prisma Studio**
+
+I opened Prisma Studio locally at `http://localhost:5555` and inspected the available database models and their records.
+
+The inspection confirmed the following:
+
+- **User table:** The table contained two records, as indicated by Prisma Studio's `Showing 2 of 2` display. These were the two test users I had previously registered through the application.
+- **Database models:** Prisma Studio displayed the application's database models, including `Business`, `ContactAudit`, `FAQChunk`, `FAQDocument`, `Fitting`, `Measurement`, and `Order`.
+- **ContactAudit table:** This table contained zero records at the time of inspection.
+
+**2. Migration status verification**
+
+I ran the following command from the project directory:
+
+```powershell
+npx prisma migrate status
+```
+
+The command returned:
+
+```text
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "tayhlor", schema "public" at "localhost:5433"
+
+1 migration found in prisma/migrations
+
+Database schema is up to date!
+```
+
+This confirmed that Prisma connected to the `tayhlor` PostgreSQL database on `localhost:5433`, found one migration in the project's migration directory, and reported that the database schema was up to date.
+
+**Conclusion**
+
+Unlike the empty database demonstrated in the classroom exercise, my database had already been migrated and tested before this inspection.
+
+I verified that:
+- The database contained the application's database tables.
+- Two test user records existed in the `User` table.
+- Prisma found one migration.
+- The database schema was up to date, with no pending migrations reported.
+
+I captured screenshots of Prisma Studio and the migration status command as 
+evidence of the database's actual state at the time of inspection.

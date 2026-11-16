@@ -1,0 +1,12 @@
+Command:
+npx prisma migrate dev --name init
+
+Output:
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "tayhlor", schema "public" at "localhost:5433"
+
+Already in sync, no schema change or pending migration was found.
+
+"Note: The initial migration was already applied during the environment setup on the new laptop. 
+This output confirms the database is in sync with the schema."
