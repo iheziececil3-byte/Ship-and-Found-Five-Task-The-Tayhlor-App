@@ -1,0 +1,37 @@
+Step 1: Add as optional
+
+S C:\Users\ebuka\Desktop\Tayhlor> npx prisma migrate deploy
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "tayhlor", schema "public" at "localhost:5433"
+
+2 migrations found in prisma/migrations
+
+Applying migration `20261117120000_add_user_nickname`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261117120000_add_user_nickname/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+
+Step 2: Fill the data
+Command: (edited it manually via prisma studio)
+Output:
+[
+  { "id": "cmwitxr4l00004eqak61857wa", "nickname": "padi" },
+  { "id": "cmwiu8x230000e0kvw8n28plu", "nickname": "mimi" }
+]
+null_nickname_count: 0
+
+Step 3: Make it required
+Command: npx prisma migrate deploy
+Output:
+Applying migration `20261117140000_make_user_nickname_required`
+The following migration(s) have been applied:
+migrations/
+  └─ 20261117140000_make_user_nickname_required/
+    └─ migration.sql
+All migrations have been successfully applied.

@@ -1,0 +1,20 @@
+PS C:\Users\ebuka\Desktop\Tayhlor> npx prisma migrate deploy
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "tayhlor", schema "public" at "localhost:5433"
+
+2 migrations found in prisma/migrations
+
+Applying migration `20261117120000_add_user_nickname`
+Error: P3018
+
+A migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve
+
+Migration name: 20261117120000_add_user_nickname
+
+Database error code: 23502
+
+Database error:
+ERROR: column "nickname" of relation "User" contains null values   
+
+DbError { severity: "ERROR", parsed_severity: Some(Error), code: SqlState(E23502), message: "column \"nickname\" of relation \"User\" contains null values", detail: None, hint: None, position: None, where_: None, schema: Some("public"), table: Some("User"), column: Some("nickname"), datatype: None, constraint: None, file: Some("tablecmds.c"), line: Some(6145), routine: Some("ATRewriteTable") } 
