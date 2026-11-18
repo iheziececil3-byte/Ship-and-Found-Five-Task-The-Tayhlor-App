@@ -90,7 +90,7 @@ Create a local `.env` file by copying the template:
 cp .env.example .env
 ```
 Open `.env` in an editor and update the required values for your local environment:
-- **`POSTGRES_PRISMA_URL`**: Set your PostgreSQL connection string (e.g., `postgresql://postgres:yourpassword@localhost:5432/tayhlor?schema=public`).
+- **`POSTGRES_PRISMA_URL`**: Set your PostgreSQL connection string (e.g., `postgresql://postgres:yourpassword@localhost:5433/tayhlor?schema=public`).
   - *Note for standard local PostgreSQL*: Ensure `pgbouncer=true` is omitted from your local URL if you are connecting directly to PostgreSQL without a PgBouncer proxy.
 - **`POSTGRES_URL_NON_POOLING`**: For local development, set this to the same connection string as `POSTGRES_PRISMA_URL`.
 - **`NEXTAUTH_SECRET`**: Generate a secure random string (e.g., via `openssl rand -base64 32`) and assign it here.
