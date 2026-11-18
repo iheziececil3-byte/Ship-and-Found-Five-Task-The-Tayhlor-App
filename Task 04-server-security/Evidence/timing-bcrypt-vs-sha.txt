@@ -1,0 +1,8 @@
+Benchmark starting...
+SHA-256: measuring 100 hashes
+SHA-256 total time: 0.000742 seconds
+SHA-256 average time: 0.000007422 seconds per hash
+bcrypt: measuring 100 hashes at cost 12
+bcrypt total time: 29.171622 seconds
+bcrypt average time: 0.291716 seconds per hash
+bcrypt is approximately 39304 times slower than SHA-256

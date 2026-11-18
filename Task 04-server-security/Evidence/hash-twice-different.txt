@@ -1,0 +1,8 @@
+PS C:\Users\ebuka\Desktop\Tayhlor> node -e "const bcrypt = require('bcryptjs'); (async () => { const password = 'Tayhlor-Test-Password-2026!'; const hash1 = await bcrypt.hash(password, 12); const hash2 = await bcrypt.hash(password, 12); console.log('First hash:', hash1); console.log('Second hash:', hash2); console.log('Hashes are identical:', hash1 === hash2); })();"
+First hash: $2a$12$ogxkHB1Xm/ag06D8kP2XTeXvNO9qBjtfgkSUPuZ2hUznAdATI7ktW
+Second hash: $2a$12$TGXc/WjEvQjqQPAiRU/qee59b017wN/bSFAMmS5oiUhsfpkou4UDS
+Hashes are identical: false
+
+Hashing the same password twice produces different outputs because bcrypt automatically 
+generates a unique random salt for each hashing operation, which is 
+embedded in the resulting hash.
