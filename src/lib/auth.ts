@@ -40,6 +40,21 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // TEMP: dev-only diagnostic. Shows length/whitespace shape only, never the
+        // password characters (SEC-06, SEC-08). Remove after verification.
+        if (process.env.NODE_ENV !== 'production') {
+          const rawPassword = credentials?.password;
+          const shape = (value: string) =>
+            value.replace(/[\s\S]/g, (char) => (/\s/.test(char) ? '␣' : '•'));
+          console.log('[auth] password shape before verify', {
+            rawLength: typeof rawPassword === 'string' ? rawPassword.length : null,
+            parsedLength: password.length,
+            trimmed: typeof rawPassword === 'string' && rawPassword !== password,
+            rawShape: typeof rawPassword === 'string' ? shape(rawPassword) : null,
+            parsedShape: shape(password),
+          });
+        }
+
         const isValid = await verifyPassword(password, user.passwordHash);
         if (!isValid) {
           return null;

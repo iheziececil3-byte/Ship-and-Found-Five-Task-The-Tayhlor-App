@@ -16,9 +16,9 @@ export const signUpSchema = z.object({
     .transform((val) => val.trim()),
   email: z
     .string()
-    .email({ message: 'Enter a valid email address' })
+    .trim()
     .toLowerCase()
-    .trim(),
+    .email({ message: 'Enter a valid email address' }),
   phone: z
     .string()
     .trim()
@@ -45,6 +45,7 @@ export const signUpSchema = z.object({
     }),
   password: z
     .string()
+    .trim()
     .min(8, { message: 'Password must be at least 8 characters' })
     .max(128, { message: 'Password must not exceed 128 characters' }),
   acceptTerms: z.literal(true, {
@@ -57,11 +58,12 @@ export type SignUpInput = z.infer<typeof signUpSchema>;
 export const signInSchema = z.object({
   email: z
     .string()
-    .email({ message: 'Enter a valid email address' })
+    .trim()
     .toLowerCase()
-    .trim(),
+    .email({ message: 'Enter a valid email address' }),
   password: z
     .string()
+    .trim()
     .min(1, { message: 'Password is required' }),
 });
 

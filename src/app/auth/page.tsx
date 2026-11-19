@@ -9,19 +9,24 @@ import { TermsModal } from '@/components/terms/TermsModal';
 type AuthMode = 'login' | 'signup' | 'reset';
 
 const INPUT_BASE_CLASSES =
-  'w-full px-4 py-2.5 rounded-lg border bg-surface text-primary placeholder:text-secondary/50 focus:outline-none focus:ring-2 text-fluid-label transition-all';
+  'w-full px-4 py-2.5 rounded-lg border bg-surface text-primary placeholder:text-secondary focus-visible:outline-none focus-visible:ring-2 text-fluid-label transition-all';
 
 const INPUT_NORMAL_CLASSES =
-  'border-outline-variant focus:border-primary focus:ring-primary/20';
+  'border-outline focus-visible:border-primary focus-visible:ring-primary';
 
 const INPUT_ERROR_CLASSES =
-  'border-error focus:border-error focus:ring-error/20';
+  'border-error focus-visible:border-error focus-visible:ring-error';
+
+// Solid, high-contrast focus ring: the old /20 and /30 opacity rings measured
+// 1.52:1 and 1.93:1 against the surface, below the 3:1 non-text contrast minimum.
+const FOCUS_RING_CLASSES =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface';
 
 const PRIMARY_BUTTON_CLASSES =
-  'w-full py-3 px-4 rounded-lg bg-primary text-on-primary font-medium text-fluid-label shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2';
+  `w-full py-3 px-4 rounded-lg bg-primary text-on-primary font-medium text-fluid-label shadow-soft hover:opacity-95 ${FOCUS_RING_CLASSES} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`;
 
 const SECONDARY_BUTTON_CLASSES =
-  'w-full inline-flex justify-center py-2 px-4 rounded-lg border border-outline-variant text-primary text-fluid-label font-medium hover:bg-surface-container transition-colors';
+  `w-full inline-flex justify-center py-2 px-4 rounded-lg border border-outline-variant text-primary text-fluid-label font-medium hover:bg-surface-container ${FOCUS_RING_CLASSES} transition-colors`;
 
 function resolveMode(value: string | null): AuthMode {
   if (value === 'signup' || value === 'reset') {
@@ -49,9 +54,12 @@ function BrandLink() {
   return (
     <Link
       href="/"
-      className="inline-flex items-center gap-3 group rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+      className={`inline-flex items-center gap-3 group rounded-lg transition-opacity hover:opacity-80 ${FOCUS_RING_CLASSES}`}
     >
-      <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-2xl shadow-soft">
+      <div
+        aria-hidden="true"
+        className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-display font-semibold text-2xl shadow-soft"
+      >
         T
       </div>
       <span className="font-display font-semibold text-fluid-brand text-primary">
@@ -71,12 +79,12 @@ function AuthFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-surface-container-low flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-surface-container-low flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <BrandLink />
-        <h2 className="mt-6 font-display font-semibold text-fluid-headline-lg text-primary">
+        <h1 className="mt-6 font-display font-semibold text-fluid-headline-lg text-primary">
           {title}
-        </h2>
+        </h1>
         {description && (
           <p className="mt-2 text-fluid-body-sm text-secondary">{description}</p>
         )}
@@ -88,12 +96,12 @@ function AuthFrame({
         </div>
 
         <div className="mt-8 text-center text-fluid-badge text-secondary">
-          <Link href="/" className="hover:underline">
+          <Link href="/" className="inline-block py-2 hover:underline">
             ← Back to Tayhlor Home
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -228,6 +236,11 @@ function TextField({
         className="block text-fluid-label font-medium text-primary mb-1.5"
       >
         {label}
+        {required && (
+          <span aria-hidden="true" className="ml-0.5 text-error">
+            *
+          </span>
+        )}
       </label>
       <div className="relative">
         <input
@@ -249,13 +262,13 @@ function TextField({
           } ${showError ? INPUT_ERROR_CLASSES : INPUT_NORMAL_CLASSES}`}
         />
         {type === 'password' && showPasswordToggle && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((current) => !current)}
+              onMouseDown={(event) => event.preventDefault()}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              aria-pressed={showPassword}
-              className="pointer-events-auto p-1.5 rounded-md text-secondary hover:text-primary hover:bg-surface-container/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 !transform-none hover:!transform-none active:!transform-none hover:!filter-none active:!filter-none"
+              className={`pointer-events-auto p-2.5 rounded-md text-secondary hover:text-primary hover:bg-surface-container/60 transition-colors ${FOCUS_RING_CLASSES} !transform-none hover:!transform-none active:!transform-none hover:!filter-none active:!filter-none`}
             >
               {showPassword ? (
                 <svg
@@ -356,7 +369,7 @@ function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full py-2.5 px-4 rounded-lg border border-outline-variant bg-surface text-primary font-medium text-fluid-label hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 flex items-center justify-center gap-3"
+      className={`w-full py-2.5 px-4 rounded-lg border border-outline-variant bg-surface text-primary font-medium text-fluid-label hover:bg-surface-container transition-colors ${FOCUS_RING_CLASSES} disabled:opacity-50 flex items-center justify-center gap-3`}
     >
       <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
         <path
@@ -431,6 +444,11 @@ function LoginForm({
       if (isEmailInvalid) {
         setLoginEmailError('Enter a valid email address');
       }
+      // Move focus to the first invalid field, matching the sign-up form.
+      const firstInvalidId = isEmailBlank || isEmailInvalid ? 'email' : 'password';
+      setTimeout(() => {
+        document.getElementById(firstInvalidId)?.focus();
+      }, 0);
       return;
     }
 
@@ -483,7 +501,7 @@ function LoginForm({
 
       {error && <FormAlert tone="error">{error}</FormAlert>}
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit} noValidate aria-label="Sign in" className="space-y-5">
         <TextField
           id="email"
           label="Email address"
@@ -510,23 +528,30 @@ function LoginForm({
             value={password}
             onChange={setPassword}
             placeholder="••••••••"
+            showPasswordToggle={true}
             forceTouched={formSubmitted}
           />
           <div className="mt-2 text-right">
             <Link
               href={resetHref}
               scroll={false}
-              className="text-fluid-badge text-secondary font-medium hover:text-primary hover:underline transition-colors"
+              className="inline-block py-1.5 text-fluid-body-sm text-secondary font-medium hover:text-primary hover:underline transition-colors"
             >
               Forgot password?
             </Link>
           </div>
         </div>
 
+        <span className="sr-only" role="status">
+          {isLoading ? 'Signing in…' : ''}
+        </span>
         <button type="submit" disabled={isBusy} className={PRIMARY_BUTTON_CLASSES}>
           {isLoading ? (
             <>
-              <span className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
+              <span
+                aria-hidden="true"
+                className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin motion-reduce:animate-none"
+              />
               <span>Signing in...</span>
             </>
           ) : (
@@ -561,9 +586,10 @@ function LoginForm({
           href="/terms"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:underline hover:text-primary transition-colors"
+          className="inline-block py-2 hover:underline hover:text-primary transition-colors"
         >
           Terms &amp; Conditions
+          <span className="sr-only"> (opens in a new tab)</span>
         </Link>
       </div>
     </AuthFrame>
@@ -772,7 +798,7 @@ function SignUpForm({
       <AuthFrame title="Create customer account">
         {error && <FormAlert tone="error">{error}</FormAlert>}
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate aria-label="Create customer account" className="space-y-4">
           <TextField
             id="fullName"
             label="Full name"
@@ -885,7 +911,10 @@ function SignUpForm({
           >
             {isLoading ? (
               <>
-                <span className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
+                <span
+                  aria-hidden="true"
+                  className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin motion-reduce:animate-none"
+                />
                 <span>Creating account...</span>
               </>
             ) : (
@@ -1058,8 +1087,15 @@ function UnifiedAuthPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-surface-container-low flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div
+        className="min-h-screen bg-surface-container-low flex items-center justify-center"
+        role="status"
+      >
+        <div
+          aria-hidden="true"
+          className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin motion-reduce:animate-none"
+        />
+        <span className="sr-only">Loading…</span>
       </div>
     );
   }
@@ -1099,8 +1135,15 @@ export default function AuthPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-surface-container-low flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <div
+          className="min-h-screen bg-surface-container-low flex items-center justify-center"
+          role="status"
+        >
+          <div
+            aria-hidden="true"
+            className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin motion-reduce:animate-none"
+          />
+          <span className="sr-only">Loading…</span>
         </div>
       }
     >

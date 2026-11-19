@@ -58,6 +58,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // TEMP: dev-only diagnostic. Shows length/whitespace shape only, never the
+    // password characters (SEC-06, SEC-08). Remove after verification.
+    if (process.env.NODE_ENV !== 'production') {
+      const rawPassword = (body as { password?: unknown } | null)?.password;
+      const shape = (value: string) =>
+        value.replace(/[\s\S]/g, (char) => (/\s/.test(char) ? '␣' : '•'));
+      console.log('[auth] password shape before hash', {
+        rawLength: typeof rawPassword === 'string' ? rawPassword.length : null,
+        parsedLength: password.length,
+        trimmed: typeof rawPassword === 'string' && rawPassword !== password,
+        rawShape: typeof rawPassword === 'string' ? shape(rawPassword) : null,
+        parsedShape: shape(password),
+      });
+    }
+
     // ACC-09: Salted password hash
     const passwordHash = await hashPassword(password);
 
