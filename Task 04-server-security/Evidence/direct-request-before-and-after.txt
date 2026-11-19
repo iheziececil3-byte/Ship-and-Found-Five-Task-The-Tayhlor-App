@@ -1,0 +1,16 @@
+Direct Request Attack: Before and After
+
+The Attack Request:
+curl.exe -X POST http://localhost:3000/api/auth/register -H "Content-Type: application/json" -d "@attack.json"
+Payload: {"fullName":"a","email":"a@b","password":"        ","phone":"123","acceptTerms":true}
+
+Task 3 Response (Server without Zod):
+{"message":"Account created successfully.","user":{"id":"cmwakbd6s0000qbxg2ayhsaca","fullName":"a","email":"a@b","role":"CUSTOMER","createdAt":"2026-11-10T10:43:49.252Z"}}
+
+Task 4 Response (Server with Zod):
+{"error":"Full name must be at least 2 characters","details":{"fullName":["Full name must be at least 2 characters","Full name must be at least 2 characters","Please enter at least 2 names separated by a space"],"email":["Enter a valid email address"],"phone":["Phone number must be an 11-digit Nigerian number (e.g., 0908 116 6271)"],"password":["Password must be at least 8 characters"]}}
+
+Server Logs:
+zod-validation: 19.09ms
+total-request: 35.4ms
+POST /api/auth/register 400 in 144ms
