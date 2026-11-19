@@ -10,10 +10,13 @@ function getRecordEnvironment(): 'LIVE' | 'TEST' | 'PREVIEW' {
 }
 
 export async function POST(req: Request) {
+  console.time('total-request');
+
   let body: unknown;
   try {
     body = await req.json();
   } catch {
+    console.timeEnd('total-request');
     return NextResponse.json(
       { error: 'Invalid JSON request payload' },
       { status: 400 }
@@ -22,7 +25,10 @@ export async function POST(req: Request) {
 
   try {
     // SEC-07: Validate input on server
+    console.time('zod-validation');
     const parsed = signUpSchema.safeParse(body);
+    console.timeEnd('zod-validation');
+
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors;
       const firstErrorMessage =
@@ -33,6 +39,7 @@ export async function POST(req: Request) {
         fieldErrors.acceptTerms?.[0] ||
         'Validation failed';
 
+      console.timeEnd('total-request');
       return NextResponse.json(
         {
           error: firstErrorMessage,
@@ -50,6 +57,7 @@ export async function POST(req: Request) {
     });
 
     if (existing) {
+      console.timeEnd('total-request');
       return NextResponse.json(
         {
           error: 'An account with this email address already exists. Please sign in instead.',
@@ -95,6 +103,7 @@ export async function POST(req: Request) {
       },
     });
 
+    console.timeEnd('total-request');
     return NextResponse.json(
       {
         message: 'Account created successfully.',
@@ -105,6 +114,7 @@ export async function POST(req: Request) {
   } catch (error) {
     // Two requests can pass the existence check at the same time.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      console.timeEnd('total-request');
       return NextResponse.json(
         {
           error: 'An account with this email address already exists. Please sign in instead.',
@@ -114,6 +124,7 @@ export async function POST(req: Request) {
     }
 
     console.error('Registration error:', error);
+    console.timeEnd('total-request');
     return NextResponse.json(
       { error: 'An unexpected error occurred while creating your account. Please try again later.' },
       { status: 500 }
