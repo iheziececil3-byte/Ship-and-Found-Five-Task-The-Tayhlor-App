@@ -158,8 +158,8 @@ The table below lists all environment variables defined across the codebase, Pri
 | `PAYSTACK_SECRET_KEY` | Paystack secret key for transaction verification and refunds | Planned | Specified in `payments.md` and `.env.example` for server-side Paystack API calls. |
 | `PAYSTACK_PUBLIC_KEY` | Paystack public key for client-side checkout initiation | Planned | Specified in `payments.md` and `.env.example` for Paystack inline checkout scripts. |
 | `PAYSTACK_WEBHOOK_SECRET` | Secret hash to cryptographically verify incoming Paystack webhooks | Planned | Specified in `payments.md` and `.env.example` to prevent forged payment events. |
-| `RESEND_API_KEY` | API authentication key for Resend email dispatch | Planned | Specified in `requirements.md` and `.env.example` for transactional status emails. |
-| `RESEND_FROM_EMAIL` | Verified sending address for outgoing customer emails | Planned | Specified in `requirements.md` and `.env.example`; requires domain verification. |
+| `RESEND_API_KEY` | API authentication key for Resend email dispatch | Required for password reset emails | Read by `src/lib/email.ts` for FR-03 reset links; also intended for FR-51 status emails. |
+| `RESEND_FROM_EMAIL` | Verified sending address for outgoing customer emails | Required for password reset emails | Read by `src/lib/email.ts` for FR-03 reset links; requires domain verification. |
 | `GEMINI_API_KEY` | Google Gemini API key for document embeddings and FAQ answers | Planned | Specified in `faq-assistant.md` and `.env.example` for AI RAG pipeline execution. |
 
 *Security note: In accordance with `ENV-03` and `SEC-06`, actual secrets, credentials, and API keys are never committed to version control and must remain confined to local or deployment secret stores.*

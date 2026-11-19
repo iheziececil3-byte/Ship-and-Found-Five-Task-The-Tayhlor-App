@@ -993,24 +993,248 @@ function SignUpForm({
   );
 }
 
-function ResetPasswordPanel({ signInHref }: { signInHref: string }) {
+function ResetPasswordPanel({
+  signInHref,
+  resetHref,
+  token,
+}: {
+  signInHref: string;
+  resetHref: string;
+  token: string;
+}) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const hasToken = token.length > 0;
+  const emailError = validateEmail(email);
+  const passwordError = validatePassword(password);
+  const confirmPasswordError =
+    confirmPassword && confirmPassword !== password ? 'Passwords do not match.' : null;
+
+  const isEmailInvalid = !email.trim() || Boolean(emailError);
+  const isPasswordInvalid = !password.trim() || Boolean(passwordError);
+  const isConfirmInvalid = !confirmPassword.trim() || Boolean(confirmPasswordError);
+
+  const handleRequestSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (isEmailInvalid) {
+      setFormSubmitted(true);
+      setTimeout(() => {
+        document.getElementById('reset-email')?.focus();
+      }, 0);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'We could not send the reset email. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccess(
+        data.message ||
+          "If an email/password account exists for that address, we've sent a reset link."
+      );
+      setIsLoading(false);
+    } catch {
+      setError('An unexpected network error occurred. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (isPasswordInvalid || isConfirmInvalid) {
+      setFormSubmitted(true);
+      const firstInvalidId = isPasswordInvalid ? 'new-password' : 'confirm-password';
+      setTimeout(() => {
+        document.getElementById(firstInvalidId)?.focus();
+      }, 0);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/password-reset/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'We could not reset your password. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccess(
+        data.message || 'Your password has been updated. Please sign in with your new password.'
+      );
+      setIsLoading(false);
+    } catch {
+      setError('An unexpected network error occurred. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthFrame
       title="Reset password"
-      description="Password reset by email is not available in this build."
+      description={
+        hasToken
+          ? 'Choose a new password for your Tayhlor account.'
+          : "Enter your email address and we'll send you a reset link if an email/password account exists."
+      }
     >
-      <div
-        role="status"
-        className="p-4 rounded-lg bg-surface-container border border-outline-variant text-fluid-body-sm text-secondary"
-      >
-        <p>
-          Password reset by email (FR-03) has not been implemented yet. To regain access to
-          your account, please contact the tailor directly.
-        </p>
-        <p className="mt-2">
-          If you signed up with Google, use the Google sign-in option instead.
-        </p>
-      </div>
+      {error && <FormAlert tone="error">{error}</FormAlert>}
+
+      {success ? (
+        <div
+          role="status"
+          className="p-4 rounded-lg bg-surface-container border border-outline-variant text-fluid-body-sm text-secondary"
+        >
+          <p>{success}</p>
+          {!hasToken && (
+            <p className="mt-2">
+              If you signed up with Google, use the Google sign-in option instead.
+            </p>
+          )}
+        </div>
+      ) : hasToken ? (
+        <form
+          onSubmit={handleConfirmSubmit}
+          noValidate
+          aria-label="Choose a new password"
+          className="space-y-5"
+        >
+          <TextField
+            id="new-password"
+            label="New password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={setPassword}
+            placeholder="At least 8 characters"
+            minLength={8}
+            hint="Must be at least 8 characters"
+            showHintOnFocusOrType={true}
+            showPasswordToggle={true}
+            forceTouched={formSubmitted}
+            validate={validatePassword}
+          />
+
+          <TextField
+            id="confirm-password"
+            label="Confirm new password"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            placeholder="Repeat your new password"
+            showPasswordToggle={true}
+            forceTouched={formSubmitted}
+            validate={(value) =>
+              value && value !== password ? 'Passwords do not match.' : null
+            }
+          />
+
+          <span className="sr-only" role="status">
+            {isLoading ? 'Updating your password…' : ''}
+          </span>
+
+          <button type="submit" disabled={isLoading} className={PRIMARY_BUTTON_CLASSES}>
+            {isLoading ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin motion-reduce:animate-none"
+                />
+                <span>Updating password...</span>
+              </>
+            ) : (
+              'Reset Password'
+            )}
+          </button>
+
+          <div className="text-center">
+            <Link
+              href={resetHref}
+              scroll={false}
+              className="inline-block py-2 text-fluid-body-sm text-secondary font-medium hover:text-primary hover:underline transition-colors"
+            >
+              Request a different link
+            </Link>
+          </div>
+        </form>
+      ) : (
+        <form
+          onSubmit={handleRequestSubmit}
+          noValidate
+          aria-label="Request a password reset link"
+          className="space-y-5"
+        >
+          <TextField
+            id="reset-email"
+            label="Email address"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="name@example.com"
+            forceTouched={formSubmitted}
+            validate={validateEmail}
+            validateOnType={true}
+          />
+
+          <span className="sr-only" role="status">
+            {isLoading ? 'Sending reset link…' : ''}
+          </span>
+
+          <button type="submit" disabled={isLoading} className={PRIMARY_BUTTON_CLASSES}>
+            {isLoading ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin motion-reduce:animate-none"
+                />
+                <span>Sending link...</span>
+              </>
+            ) : (
+              'Send reset link'
+            )}
+          </button>
+
+          <p className="text-fluid-badge text-secondary text-center">
+            The link expires in 30 minutes and can be used once. If you signed up with Google,
+            use the Google sign-in option instead.
+          </p>
+        </form>
+      )}
 
       <div className="mt-6 space-y-3">
         <Link href={signInHref} scroll={false} className={PRIMARY_BUTTON_CLASSES}>
@@ -1084,6 +1308,7 @@ function UnifiedAuthPage() {
   const mode = resolveMode(searchParams.get('mode'));
   const callbackUrl = resolveCallbackUrl(searchParams.get('callbackUrl'));
   const registered = searchParams.get('registered') === 'true';
+  const resetToken = searchParams.get('token') ?? '';
 
   if (status === 'loading') {
     return (
@@ -1118,7 +1343,13 @@ function UnifiedAuthPage() {
   }
 
   if (mode === 'reset') {
-    return <ResetPasswordPanel signInHref={loginHref} />;
+    return (
+      <ResetPasswordPanel
+        signInHref={loginHref}
+        resetHref={resetHref}
+        token={resetToken}
+      />
+    );
   }
 
   return (

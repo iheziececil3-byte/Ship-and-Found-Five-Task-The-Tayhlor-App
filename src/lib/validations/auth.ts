@@ -69,3 +69,23 @@ export const signInSchema = z.object({
 
 export type SignInInput = z.infer<typeof signInSchema>;
 
+export const requestPasswordResetSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email({ message: 'Enter a valid email address' }),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(1, { message: 'A valid reset link is required' }),
+  password: z
+    .string()
+    .trim()
+    .min(8, { message: 'Password must be at least 8 characters' })
+    .max(128, { message: 'Password must not exceed 128 characters' }),
+});
+
+export type RequestPasswordResetInput = z.infer<typeof requestPasswordResetSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
