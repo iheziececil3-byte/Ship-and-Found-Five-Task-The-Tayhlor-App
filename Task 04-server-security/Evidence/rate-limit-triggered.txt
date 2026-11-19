@@ -1,0 +1,23 @@
+--- Request 1 ---
+{"message":"Account created successfully...", "status": 201}
+--- Request 2 ---
+{"error":"An account with this email address already exists..."}
+Status: 409
+--- Request 3 ---
+{"error":"An account with this email address already exists..."}
+Status: 409
+--- Request 4 ---
+{"error":"An account with this email address already exists..."}
+Status: 409
+--- Request 5 ---
+{"error":"An account with this email address already exists..."}
+Status: 409
+--- Request 6 ---
+{"error":"Too many requests. Please wait a moment before trying again."}
+Status: 429
+
+Server Logs:
+zod-validation: 0.198ms
+total-request: 4.284ms
+POST /api/auth/register 409 in 27ms
+POST /api/auth/register 429 in 26ms

@@ -1,0 +1,10 @@
+--- Triggering Rate Limit (Requests 1-6) ---
+{"error":"An account with this email address already exists. Please sign in instead."}Status: 409
+{"error":"An account with this email address already exists. Please sign in instead."}Status: 409
+{"error":"An account with this email address already exists. Please sign in instead."}Status: 409
+{"error":"An account with this email address already exists. Please sign in instead."}Status: 409
+{"error":"An account with this email address already exists. Please sign in instead."}Status: 409
+{"error":"Too many requests. Please wait a moment before trying again."}Status: 429
+
+--- Bypassing Rate Limit (Spoofed IP) ---
+{"error":"An account with this email address already exists. Please sign in instead."}Status: 409

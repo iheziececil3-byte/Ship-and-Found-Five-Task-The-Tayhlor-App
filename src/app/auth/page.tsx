@@ -753,6 +753,14 @@ function SignUpForm({
 
       const data = await res.json();
 
+      if (res.status === 429) {
+        setError(
+          data.error || 'Too many requests. Please wait a moment before trying again.'
+        );
+        setIsLoading(false);
+        return;
+      }
+
       if (!res.ok) {
         setError(data.error || 'Failed to create account. Please check your information.');
         setIsLoading(false);

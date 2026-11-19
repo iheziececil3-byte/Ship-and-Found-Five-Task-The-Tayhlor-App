@@ -153,6 +153,8 @@ The table below lists all environment variables defined across the codebase, Pri
 | `RECORD_ENVIRONMENT` | Marker distinguishing `LIVE`, `TEST`, and `PREVIEW` records | Optional (defaults to `LIVE`) | Read in `src/app/api/auth/register/route.ts` to tag new customer accounts for test isolation. |
 | `NEXTAUTH_URL` | Canonical base URL for NextAuth callbacks and redirects | **Required** (in production) | Used by NextAuth to construct absolute callback and redirection URLs. |
 | `NEXTAUTH_SECRET` | Cryptographic secret used to encrypt and hash JWT session tokens | **Required** | Read in `src/lib/auth.ts` to secure user session cookies. |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL for the shared rate-limit store | Optional locally, required in production | Read in `src/lib/rate-limit.ts`; when absent, local development uses an in-memory sliding window. |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token for the shared rate-limit store | Optional locally, required in production | Read in `src/lib/rate-limit.ts`; when absent, local development uses an in-memory sliding window. |
 | `GOOGLE_CLIENT_ID` | Client ID for Google OAuth authentication | Optional | Read in `src/lib/auth.ts` to conditionally activate the Google sign-in provider. |
 | `GOOGLE_CLIENT_SECRET` | Client Secret for Google OAuth authentication | Optional | Read in `src/lib/auth.ts` in conjunction with `GOOGLE_CLIENT_ID`. |
 | `PAYSTACK_SECRET_KEY` | Paystack secret key for transaction verification and refunds | Planned | Specified in `payments.md` and `.env.example` for server-side Paystack API calls. |
