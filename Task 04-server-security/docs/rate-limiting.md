@@ -1,32 +1,20 @@
-# Server-Side Rate Limiting
+# Rate Limiting
 
-## Implementation
+## 1. The Threshold
+I implemented a rate limit of **5 requests per 1 minute** per IP address on the registration, login, and password reset routes. 
+**Why this number:** A legitimate human user will rarely need to create more than one account per minute. Allowing 5 attempts gives room for network retries or typos, while stopping automated bots from spamming the database. The counter is stored in Upstash Redis in production, with an in-memory fallback for local development.
 
-All current form-submission endpoints are rate limited in `src/middleware.ts` before they reach their route handlers:
+## 2. Triggering the Limit
+I sent 6 rapid requests to the registration endpoint from my terminal to exhaust the limit. On the 6th request, the server returned a `429 Too Many Requests` status code. I then attempted to sign up in the browser. The frontend caught the `429` status and displayed the error message: "Too many requests. Please wait a moment before trying again." (See `13-rate-limit-triggered.png` and `13-rate-limit-triggered.txt`).
 
-| Endpoint | Form | Limit |
-| :--- | :--- | :--- |
-| `POST /api/auth/register` | Sign-up | 5 requests per minute per IP |
-| `POST /api/auth/callback/credentials` | Sign-in | 5 requests per minute per IP |
-| `POST /api/auth/password-reset` | Request reset link | 5 requests per minute per IP |
-| `POST /api/auth/password-reset/confirm` | Set new password | 5 requests per minute per IP |
+## 3. Defeating the Limit
+To prove that IP-based rate limiting is not foolproof, I spoofed the `x-forwarded-for` header in my cURL request to `8.8.8.8`. The server trusted this header, believed the request was coming from a new IP address, and allowed the request through. Instead of a `429 Too Many Requests`, the server returned a `409 Conflict` (because the email was a duplicate), proving the rate limit was bypassed. (See `14-rate-limit-defeated.txt`).
 
-The limiter uses `@upstash/ratelimit` with a **sliding window** and Upstash Redis as the shared store. This is the production path and works across multiple server instances.
+## 4. Why IP alone is insufficient
+IP-based rate limiting is insufficient because attackers can easily spoof headers or use a botnet (a network of compromised computers) to rotate through thousands of different IP addresses. Serious applications use a combination of identifiers:
+- **Email address:** Limit the number of login attempts per email address to stop targeted brute-force attacks.
+- **Hardware identifiers:** Use a fingerprinting library to identify the device, not just the IP.
+- **Shared storage (Redis):** In production, the rate limit counters must be stored in a shared database (like Upstash Redis) so that if you have multiple servers, they all share the same counter. If you use in-memory counters, a user could just hit a different server to bypass the limit.
 
-When Upstash credentials are absent, local development uses an in-memory sliding window so sign-up and sign-in still work without new secrets. That fallback is per server instance and is not used as the production design.
-
-## Client identity
-
-The IP is taken from the first value in `x-forwarded-for`, then from `req.ip`. If neither is available, requests share an `unknown` bucket rather than bypassing the limit.
-
-## Responses
-
-A blocked request receives:
-
-- HTTP `429 Too Many Requests`
-- a JSON error message
-- `Retry-After`
-- `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset`
-- matching `X-RateLimit-*` compatibility headers
-
-If the Upstash store fails after being configured, the middleware fails closed with HTTP `503` instead of silently allowing unlimited requests.
+## 5. The Trade-off
+A strict IP rate limit can accidentally block a legitimate user on a shared campus or office network where hundreds of people share the same IP. If one person gets blocked, everyone on that network gets blocked. To mitigate this, I used a sliding window algorithm (which is more forgiving than a fixed window) and set the limit high enough (5 per minute) to allow normal human retries. I also added a `Retry-After` header so the client knows exactly when they can try again.
