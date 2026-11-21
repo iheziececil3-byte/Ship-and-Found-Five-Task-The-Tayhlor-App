@@ -4,7 +4,7 @@
 
 Password reset by email is implemented for email/password accounts.
 
-- `POST /api/auth/password-reset` accepts an email address and sends a reset link through Resend.
+- `POST /api/auth/password-reset` accepts an email address and sends a reset link through Nodemailer SMTP.
 - `POST /api/auth/password-reset/confirm` accepts the link token and a new password.
 - The reset link expires after 30 minutes, as required by FR-03.
 - The link is single-use. Changing the password invalidates every earlier reset link for that account.
@@ -25,6 +25,6 @@ This satisfies the single-use requirement without a new Prisma model or migratio
 
 ## Configuration
 
-`RESEND_API_KEY` and `RESEND_FROM_EMAIL` must be set. If either is missing, the request endpoint returns a configuration error rather than claiming that an email was sent.
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM_EMAIL` must be set. If any required value is missing, the request endpoint returns a configuration error rather than claiming that an email was sent.
 
 The link base URL comes from `NEXTAUTH_URL`, with the request origin as a local fallback.

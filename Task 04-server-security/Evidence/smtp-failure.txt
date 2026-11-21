@@ -1,0 +1,13 @@
+SMTP Failure
+
+Configuration:
+Host: smtp.gmail.com
+Port: 465
+Secure: true
+
+Result:
+The email was not sent. Gmail rejected the SMTP login with the following error:
+535 5.7.8 Username and Password not accepted
+
+Cause:
+The SMTP_PASSWORD in the .env file was not a valid 16-character Gmail App Password for the account.

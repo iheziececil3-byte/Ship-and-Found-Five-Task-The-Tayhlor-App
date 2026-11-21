@@ -210,7 +210,7 @@ export function TermsContent() {
             <strong className="text-primary font-medium">Paystack</strong> — payment processing.
           </li>
           <li>
-            <strong className="text-primary font-medium">Resend</strong> — transactional email delivery.
+            <strong className="text-primary font-medium">Gmail SMTP (via Nodemailer)</strong> — transactional email delivery.
           </li>
           <li>
             <strong className="text-primary font-medium">Google Gemini</strong> — AI chat and embeddings.

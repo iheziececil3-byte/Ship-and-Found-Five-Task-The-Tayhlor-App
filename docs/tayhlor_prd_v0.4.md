@@ -8,7 +8,7 @@
 | Owner | Cecil Ihezie |
 | Locked stack | Next.js (App Router), TypeScript, Prisma ORM, PostgreSQL with pgvector |
 | Hosting | Vercel (app and preview deployments), PostgreSQL provisioned through Vercel (provider to be confirmed, see Section 14) |
-| Third-party services | Paystack (payments, test mode until launch), Google Gemini free tier (embeddings and FAQ answers), Resend (email), Google sign-in |
+| Third-party services | Paystack (payments, test mode until launch), Google Gemini free tier (embeddings and FAQ answers), Nodemailer SMTP (email), Google sign-in |
 | Status | Draft. Items in Open Questions must be resolved before build or pilot. |
 
 ---
@@ -96,7 +96,7 @@ Tailoring businesses coordinate most orders through direct contact. The brief de
 - Deposit (70%) and balance (30%) payments through Paystack
 - Payment verification and payment history
 - Tailor dashboard for orders, customers, and payments
-- Status notifications to customers by email (Resend)
+- Status notifications to customers by email (Nodemailer SMTP)
 - AI FAQ assistant grounded in tailor-approved business documents
 - Audit trail for order status and payment changes
 - One shop per deployment
@@ -173,7 +173,7 @@ Tailoring businesses coordinate most orders through direct contact. The brief de
 | ID | Requirement | Priority | Acceptance Criteria |
 |---|---|---|---|
 | FR-50 | Customers see live order status on their dashboard. | P0 | Status updates appear without a manual refresh or within a defined polling interval. |
-| FR-51 | Customers receive an email when an order is accepted or declined, when a payment succeeds, when the order is ready, and when a refund is processed. | P1 | Email is sent within five minutes of the status change, through Resend. |
+| FR-51 | Customers receive an email when an order is accepted or declined, when a payment succeeds, when the order is ready, and when a refund is processed. | P1 | Email is sent within five minutes of the status change, through Nodemailer SMTP. |
 
 ### 6.7 AI FAQ Assistant
 
@@ -256,7 +256,7 @@ The assistant uses retrieval-augmented generation (RAG). It answers only from ta
         |
         +--> Google Gemini (embeddings) and language model provider
         |
-        +--> Resend (verification, password reset, order emails)
+        +--> Nodemailer SMTP (verification, password reset, order emails)
 ```
 
 ### 8.2 Key Technology Choices
@@ -269,7 +269,7 @@ The assistant uses retrieval-augmented generation (RAG). It answers only from ta
 | Database access | Runtime uses a pooled connection string through Prisma. Migrations and the Prisma CLI use a direct connection string. Exact variable names follow the chosen host. | Pooling suits Vercel's serverless functions. The direct connection suits migrations. |
 | Schema changes | Migrations are written in Git and run manually by the owner. The app never runs migrations at request time. | Owner's decision. Keeps schema changes deliberate. |
 | Authentication | Pending decision (see Open Questions). Must support email and password, Google sign-in, and email verification. Passwords hashed with bcrypt or argon2. | Requirements set by owner. |
-| Email | Resend | Owner's decision. Requires a verified sending domain. |
+| Email | Nodemailer with SMTP | Owner's decision. Requires a verified sender identity and SMTP app credentials. |
 | Embeddings | Google Gemini embedding model on the free tier | Owner's decision. Free tier content may be used by Google to improve its products (Q13). The embedding dimension must match the vector column. |
 | Language model | Google Gemini on the free tier | Owner's decision. Free tier terms apply to answers as well (Q13). Specific model confirmed at build time (Q5). |
 | Payments | Paystack only, as a custom integration | Owner's decision. Flutterwave is deferred until after the pilot. Lovable's built-in payments use Stripe or Paddle, so this is a custom build. |

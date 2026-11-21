@@ -37,7 +37,7 @@ Tayhlor replaces scattered informal messaging channels, physical paper ledgers, 
 - **Fitting Records (FR-33, PRD 8.4)**: Interface and server actions to record garment fitting appointments with `SATISFACTORY` or `ALTERATIONS_REQUIRED` outcomes.
 - **Paystack Payment Processing (FR-40 – FR-46)**: Server-side 70% deposit and 30% balance calculations, Paystack checkout redirection, cryptographic webhook signature verification, server-to-server transaction verification, and manual refund logging.
 - **Customer & Tailor Dashboards (FR-44, FR-50)**: Live order tracking views, payment history tables, and tailor contact detail management with audit logging (FR-34).
-- **Transactional Email Dispatch (FR-51)**: Integration with the Resend API to dispatch automated notifications when orders are accepted, declined, paid, ready, or refunded.
+- **Transactional Email Dispatch (FR-51)**: Integration with Nodemailer SMTP to dispatch automated notifications when orders are accepted, declined, paid, ready, or refunded.
 - **AI FAQ Assistant (FR-60 – FR-64)**: Retrieval-Augmented Generation (RAG) assistant using Google Gemini embeddings and pgvector similarity search over tailor-approved documents, including strict decline responses and source document citations.
 - **Data Privacy & Compliance Controls (FR-72, FR-73)**: Customer data export mechanisms, account deletion workflows under category-based retention policies, and formal privacy notice disclosures.
 - **Automated Test Suite (SEC-12, FR-04)**: Automated unit, integration, and end-to-end test suites covering authentication, role permissions, and record ownership.
@@ -57,7 +57,7 @@ Tayhlor replaces scattered informal messaging channels, physical paper ledgers, 
 | **Zod 3.23** | Schema Validation | Enforces strict server-side boundary validation (SEC-07) for incoming registration and sign-in payloads, preventing injection and malformed inputs. | Operational in auth validation routes. |
 | **bcryptjs 2.4** | Password Hashing | Provides cryptographic salting and hashing (12 rounds) for customer passwords prior to database storage, preventing plaintext credential exposure. | Operational in `src/lib/passwords.ts` and registration route. |
 | **Paystack (Planned)** | Payment Gateway | Designated in PRD Section 1 & `payments.md` as the exclusive payment provider for NGN transactions (deposit and balance). Deferred until payment milestone. | Not installed or integrated; configuration placeholders documented. |
-| **Resend (Planned)** | Transactional Email | Designated in PRD Section 1 & `requirements.md` for transactional customer notifications (order status changes, payment confirmations). | Not installed or integrated; configuration placeholders documented. |
+| **Nodemailer** | Transactional Email | Sends all application email through SMTP (Gmail in this setup) for verification codes, password resets, and future status notifications. | Installed and integrated in `src/lib/email.ts`; SMTP configuration documented. |
 | **Google Gemini API (Planned)** | Vector Embeddings & RAG | Designated in PRD Section 7 & `faq-assistant.md` for document chunk embedding and grounded question answering against tailor-approved business documents. | Not installed or integrated; configuration placeholders documented. |
 
 ---
@@ -160,8 +160,13 @@ The table below lists all environment variables defined across the codebase, Pri
 | `PAYSTACK_SECRET_KEY` | Paystack secret key for transaction verification and refunds | Planned | Specified in `payments.md` and `.env.example` for server-side Paystack API calls. |
 | `PAYSTACK_PUBLIC_KEY` | Paystack public key for client-side checkout initiation | Planned | Specified in `payments.md` and `.env.example` for Paystack inline checkout scripts. |
 | `PAYSTACK_WEBHOOK_SECRET` | Secret hash to cryptographically verify incoming Paystack webhooks | Planned | Specified in `payments.md` and `.env.example` to prevent forged payment events. |
-| `RESEND_API_KEY` | API authentication key for Resend email dispatch | Required for password reset emails | Read by `src/lib/email.ts` for FR-03 reset links; also intended for FR-51 status emails. |
-| `RESEND_FROM_EMAIL` | Verified sending address for outgoing customer emails | Required for password reset emails | Read by `src/lib/email.ts` for FR-03 reset links; requires domain verification. |
+| `SMTP_HOST` | SMTP server hostname | Required wherever email is sent | Read by `src/lib/email.ts`; Gmail uses `smtp.gmail.com`. |
+| `SMTP_PORT` | SMTP server port | Required wherever email is sent | Read by `src/lib/email.ts`; Gmail uses `465` with TLS or `587` with STARTTLS. |
+| `SMTP_SECURE` | Whether to use implicit TLS | Required wherever email is sent | `true` for port 465; `false` for port 587. |
+| `SMTP_USER` | SMTP login username | Required wherever email is sent | Secret, server-side only; Gmail address in this setup. |
+| `SMTP_PASSWORD` | SMTP login password or app password | Required wherever email is sent | Secret, server-side only; Gmail requires an App Password. |
+| `SMTP_FROM_EMAIL` | Verified sender address for outgoing email | Required wherever email is sent | Used as the `From` address by `src/lib/email.ts`. |
+| `SMTP_FROM_NAME` | Display name for outgoing email | Optional; defaults to `Tayhlor` | Used with `SMTP_FROM_EMAIL` in the `From` header. |
 | `GEMINI_API_KEY` | Google Gemini API key for document embeddings and FAQ answers | Planned | Specified in `faq-assistant.md` and `.env.example` for AI RAG pipeline execution. |
 
 *Security note: In accordance with `ENV-03` and `SEC-06`, actual secrets, credentials, and API keys are never committed to version control and must remain confined to local or deployment secret stores.*

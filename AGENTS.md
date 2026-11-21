@@ -21,7 +21,7 @@ Order submission, review, acceptance, decline, cancellation, and progress throug
 Deposit and balance payments through Paystack, confirmed only by server-side verification. Manual full refund after a cancellation that follows a successful deposit.
 Customer dashboard with live status (FR-50), payment history (FR-43), and personal data export or deletion requests (FR-72, P1).
 Tailor dashboard for orders, customers, and payments (FR-44). Tailor edits customer contact details, logged (FR-34, P1).
-Customer email through Resend (FR-51): when an order is accepted or declined, a payment succeeds, the order is ready, or a refund is processed. AI FAQ assistant grounded in approved documents. Audit trail for status and payment changes.
+Customer email through Nodemailer SMTP (FR-51): when an order is accepted or declined, a payment succeeds, the order is ready, or a refund is processed. AI FAQ assistant grounded in approved documents. Audit trail for status and payment changes.
 Source: PRD 5.1, FR-03, FR-34, FR-72.
 
 Not in scope for v1
@@ -45,7 +45,7 @@ The v1 application uses one PostgreSQL database for development, test, preview, 
 Runtime queries use a pooled connection. Migrations and the Prisma CLI use a direct connection (PRD 8.2).
 Hosting: Vercel for the app and preview deployments.
 Payments: Paystack only, in test mode (see Payment rules). Flutterwave is deferred.
-Email: Resend. Requires a verified sending domain.
+Email: Nodemailer with SMTP (Gmail in this setup). Requires a verified sender identity and an app password.
 Sign-in library: undecided. Working assumption: Auth.js, with an app-owned verification step (PRD Q6).
 Embeddings and FAQ answers: Google Gemini API, free tier. Models are confirmed at build time against Google's model list (PRD Q5, Q13). Ask the owner if unclear.
 Vector search: pgvector in the same database as application data (PRD 9.2).

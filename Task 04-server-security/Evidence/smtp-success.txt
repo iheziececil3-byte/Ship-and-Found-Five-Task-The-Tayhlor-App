@@ -1,0 +1,10 @@
+SMTP Success
+
+Provider: Brevo (smtp-relay.brevo.com:587)
+From: Tayhlor <iheziececil3@gmail.com>
+Status: Delivering
+
+SMTP_HOST="smtp-relay.brevo.com"
+SMTP_PORT="587"
+
+The email was successfully sent and queued by Brevo. 

@@ -634,13 +634,7 @@ function validatePassword(value: string): string | null {
   return null;
 }
 
-function SignUpForm({
-  callbackUrl,
-  signInHref,
-}: {
-  callbackUrl: string;
-  signInHref: string;
-}) {
+function SignUpForm({ signInHref }: { signInHref: string }) {
   const router = useRouter();
 
   const [fullName, setFullName] = useState('');
@@ -767,23 +761,10 @@ function SignUpForm({
         return;
       }
 
-      // Automatically sign in upon successful account creation
-      const signInRes = await signIn('credentials', {
-        email: email.trim().toLowerCase(),
-        password,
-        redirect: false,
-      });
-
-      if (signInRes?.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        const params = new URLSearchParams({ mode: 'login', registered: 'true' });
-        if (callbackUrl !== '/') {
-          params.set('callbackUrl', callbackUrl);
-        }
-        router.replace(`/auth?${params.toString()}`);
-      }
+      // Send new customers to email verification before they can sign in.
+      router.push(
+        `/auth/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`
+      );
     } catch {
       setError('An unexpected network error occurred. Please try again.');
       setIsLoading(false);
@@ -1347,7 +1328,7 @@ function UnifiedAuthPage() {
   const resetHref = buildAuthHref('reset', callbackUrl);
 
   if (mode === 'signup') {
-    return <SignUpForm callbackUrl={callbackUrl} signInHref={loginHref} />;
+    return <SignUpForm signInHref={loginHref} />;
   }
 
   if (mode === 'reset') {

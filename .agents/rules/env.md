@@ -22,7 +22,7 @@ Scope: Environment configuration, environment separation, and secret handling.
 
 - ENV-06: Production credentials MUST NOT be used for automated development or test operations. Reason: Automated tests must not accidentally modify real customer or business data.
 
-- ENV-07: The Resend sending domain MUST be verified before the application sends production email. Reason: Domain verification supports reliable and authorized email delivery.
+- ENV-07: The configured SMTP sending identity MUST be verified and authorized before the application sends production email. Reason: Verified sender identity supports reliable and authorized email delivery.
 
 ## Tayhlor environment categories
 
@@ -32,7 +32,7 @@ The following configuration categories are expected:
 - Direct database connection for approved migration operations, if required by the selected provider.
 - Paystack test credentials.
 - Gemini API credentials.
-- Resend API credentials.
+- SMTP credentials for Nodemailer.
 - Google sign-in credentials.
 - Authentication secrets.
 

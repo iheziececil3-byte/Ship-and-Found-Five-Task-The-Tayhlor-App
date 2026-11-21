@@ -26,9 +26,9 @@ One job: define what the app must build and show.
 - REQ-07: Customer order status updates appear without a manual refresh, or within a polling interval. OPEN: the interval.
   Why: PRD FR-50 and Goal G2 say customers stay informed without calling the tailor.
 - REQ-08: Customers get an email within five minutes of: order accepted, order declined, payment succeeded, order ready, or refund processed.
-  Why: PRD FR-51 (P1) requires these emails. Emails go through Resend.
-- REQ-09: No email is sent until the Resend sending domain is verified.
-  Why: PRD 8.2 says Resend requires a verified sending domain.
+  Why: PRD FR-51 (P1) requires these emails. Emails go through Nodemailer SMTP.
+- REQ-09: No email is sent until the SMTP sending identity is verified and configured.
+  Why: A verified sender identity supports reliable and authorized email delivery.
 - REQ-10: Shop details shown to customers come only from the business record.
   Why: PRD FR-62 and Goal G3 forbid invented or unverified facts.
 

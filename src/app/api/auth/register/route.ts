@@ -1,9 +1,16 @@
+import { randomInt } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { isPasswordBreached } from '@/lib/breached-passwords';
+import {
+  sendVerificationEmailInBackground,
+  sendWelcomeEmailInBackground,
+} from '@/lib/email';
 import { hashPassword } from '@/lib/passwords';
 import { signUpSchema } from '@/lib/validations/auth';
+
+const VERIFICATION_CODE_TTL_MS = 7 * 60 * 1000;
 
 function getRecordEnvironment(): 'LIVE' | 'TEST' | 'PREVIEW' {
   const value = process.env.RECORD_ENVIRONMENT;
@@ -112,6 +119,11 @@ export async function POST(req: Request) {
     // ACC-09: Salted password hash
     const passwordHash = await hashPassword(password);
 
+    // Six-digit verification code from Node crypto, never Math.random().
+    const verificationCode = String(randomInt(100000, 999999));
+    const createdAt = new Date();
+    const verificationExpires = new Date(createdAt.getTime() + VERIFICATION_CODE_TTL_MS);
+
     // ACC-02: Public sign-up always creates a CUSTOMER account
     const user = await prisma.user.create({
       data: {
@@ -119,6 +131,8 @@ export async function POST(req: Request) {
         email,
         phone,
         passwordHash,
+        verificationCode,
+        verificationExpires,
         role: 'CUSTOMER',
         recordEnvironment: getRecordEnvironment(),
       },
@@ -129,6 +143,17 @@ export async function POST(req: Request) {
         role: true,
         createdAt: true,
       },
+    });
+
+    // Deliberately not awaited: SMTP delivery must not delay the response.
+    sendVerificationEmailInBackground({
+      to: user.email,
+      fullName: user.fullName,
+      code: verificationCode,
+    });
+    sendWelcomeEmailInBackground({
+      to: user.email,
+      fullName: user.fullName,
     });
 
     console.timeEnd('total-request');

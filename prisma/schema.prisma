@@ -72,17 +72,20 @@ enum DocumentStatus {
 // ------------------------------------------------------------------------------
 
 model User {
-  id                String            @id @default(cuid())
-  email             String            @unique
-  emailVerified     DateTime?
-  fullName          String
-  phone             String?
-  passwordHash      String?
-  googleSubject     String?           @unique
-  role              Role              @default(CUSTOMER)
-  recordEnvironment RecordEnvironment @default(LIVE)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id                  String            @id @default(cuid())
+  email               String            @unique
+  emailVerified       DateTime?
+  emailVerifiedAt     DateTime?
+  verificationCode    String?
+  verificationExpires DateTime?
+  fullName            String
+  phone               String?
+  passwordHash        String?
+  googleSubject       String?           @unique
+  role                Role              @default(CUSTOMER)
+  recordEnvironment   RecordEnvironment @default(LIVE)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   // Relationships
   measurements     Measurement[]
@@ -250,4 +253,3 @@ model ContactAudit {
   @@index([customerId])
   @@index([recordEnvironment])
 }
-
