@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isPasswordBreached } from '@/lib/breached-passwords';
 import { hashPassword } from '@/lib/passwords';
 import {
   getPasswordVersion,
@@ -55,6 +56,31 @@ export async function POST(req: Request) {
       getPasswordVersion(user.passwordHash) !== tokenData.passwordVersion
     ) {
       return NextResponse.json({ error: INVALID_LINK_MESSAGE }, { status: 400 });
+    }
+
+    // Check every newly chosen password against known breaches before hashing
+    // it. The lookup is k-anonymous: only a five-character hash prefix is sent,
+    // never the password itself. An unavailable lookup rejects the request so
+    // no password is accepted with an unverified breach status.
+    let breached: boolean;
+    try {
+      breached = await isPasswordBreached(password);
+    } catch (error) {
+      console.error('Breach lookup failed during password reset:', error);
+      return NextResponse.json(
+        { error: 'We could not verify this password right now. Please try again shortly.' },
+        { status: 503 }
+      );
+    }
+
+    if (breached) {
+      return NextResponse.json(
+        {
+          error:
+            'This password has appeared in a known data breach. Please choose a different password.',
+        },
+        { status: 400 }
+      );
     }
 
     const passwordHash = await hashPassword(password);

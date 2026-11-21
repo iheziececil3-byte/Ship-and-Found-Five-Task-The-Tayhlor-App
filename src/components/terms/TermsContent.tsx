@@ -215,6 +215,11 @@ export function TermsContent() {
           <li>
             <strong className="text-primary font-medium">Google Gemini</strong> — AI chat and embeddings.
           </li>
+          <li>
+            <strong className="text-primary font-medium">Have I Been Pwned</strong> — checks newly set
+            passwords against known breaches. Only the first five characters of a SHA-1 hash of the
+            password are sent; the password itself is never transmitted.
+          </li>
         </ul>
         <p className="text-fluid-body-sm text-secondary mt-2">
           We require each sub-processor to maintain protection at least equivalent to what we owe you.

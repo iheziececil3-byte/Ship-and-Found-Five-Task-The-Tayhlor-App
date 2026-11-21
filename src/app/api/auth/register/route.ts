@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { isPasswordBreached } from '@/lib/breached-passwords';
 import { hashPassword } from '@/lib/passwords';
 import { signUpSchema } from '@/lib/validations/auth';
 
@@ -63,6 +64,33 @@ export async function POST(req: Request) {
           error: 'An account with this email address already exists. Please sign in instead.',
         },
         { status: 409 }
+      );
+    }
+
+    // Check every candidate password against known breaches before hashing it.
+    // The lookup is k-anonymous: only a five-character hash prefix is sent,
+    // never the password itself. An unavailable lookup rejects the request so
+    // no password is accepted with an unverified breach status.
+    let breached: boolean;
+    try {
+      breached = await isPasswordBreached(password);
+    } catch (error) {
+      console.error('Breach lookup failed during registration:', error);
+      console.timeEnd('total-request');
+      return NextResponse.json(
+        { error: 'We could not verify this password right now. Please try again shortly.' },
+        { status: 503 }
+      );
+    }
+
+    if (breached) {
+      console.timeEnd('total-request');
+      return NextResponse.json(
+        {
+          error:
+            'This password has appeared in a known data breach. Please choose a different password.',
+        },
+        { status: 400 }
       );
     }
 
