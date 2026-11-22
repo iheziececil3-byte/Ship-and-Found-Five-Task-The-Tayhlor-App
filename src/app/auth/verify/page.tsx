@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 const INPUT_BASE_CLASSES =
   'w-full px-4 py-2.5 rounded-lg border bg-surface text-primary placeholder:text-secondary focus-visible:outline-none focus-visible:ring-2 text-fluid-label transition-all';
@@ -123,18 +124,24 @@ function VerifyEmailForm() {
   const [error, setError] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
+  // Countdown timer: 3 seconds before auto-redirecting to dashboard
   useEffect(() => {
     if (!isVerified) {
       return;
     }
 
-    const timer = setTimeout(() => {
-      router.replace('/customer/dashboard');
-    }, 2000);
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
 
-    return () => clearTimeout(timer);
-  }, [isVerified, router]);
+    router.replace('/customer/dashboard');
+    router.refresh();
+  }, [isVerified, countdown, router]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -153,7 +160,7 @@ function VerifyEmailForm() {
         body: JSON.stringify({ code, email }),
       });
 
-      let data: { error?: string; message?: string } | null = null;
+      let data: { error?: string; message?: string; verificationToken?: string } | null = null;
       try {
         data = await response.json();
       } catch {
@@ -164,12 +171,26 @@ function VerifyEmailForm() {
         setError(
           data?.error ??
             data?.message ??
-            'We could not verify your email. Please try again.'
+            'We could not verify your email. Please check your code or request a new one.'
         );
         return;
       }
 
+      // Automatically establish NextAuth session using single-use handshake token
+      if (data?.verificationToken) {
+        const signInResult = await signIn('email-verification', {
+          email,
+          verificationToken: data.verificationToken,
+          redirect: false,
+        });
+
+        if (signInResult?.error) {
+          console.error('Session establishment error:', signInResult.error);
+        }
+      }
+
       setIsVerified(true);
+      setCountdown(3);
     } catch {
       setError('An unexpected network error occurred. Please try again.');
     } finally {
@@ -179,19 +200,77 @@ function VerifyEmailForm() {
 
   return (
     <AuthFrame
-      title="Verify your email"
-      description="Enter the 6-digit code sent to your email address."
+      title={isVerified ? 'Verification Complete' : 'Verify your email'}
+      description={
+        isVerified
+          ? 'Your Tayhlor account has been verified and activated.'
+          : 'Enter the 6-digit code sent to your email address.'
+      }
     >
       {error && <FormAlert tone="error">{error}</FormAlert>}
 
       {isVerified ? (
-        <div className="text-center">
-          <FormAlert tone="success">
-            Email verified successfully! Redirecting to your dashboard...
-          </FormAlert>
-          <p className="text-fluid-body-sm text-secondary">
-            You will be redirected shortly.
-          </p>
+        <div className="py-2 text-center space-y-5">
+          <div
+            aria-hidden="true"
+            className="w-16 h-16 mx-auto rounded-full bg-success/15 border-2 border-success/40 flex items-center justify-center text-success"
+          >
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+
+          <div>
+            <h2 className="text-fluid-headline-md font-semibold text-primary">
+              Email Verified Successfully!
+            </h2>
+            <p className="mt-2 text-fluid-body-sm text-secondary">
+              Taking you directly to your dashboard in{' '}
+              <span className="font-bold text-primary tabular-nums text-fluid-label">
+                {countdown}
+              </span>{' '}
+              second{countdown === 1 ? '' : 's'}...
+            </p>
+          </div>
+
+          {/* Visual 3-second progress indicator */}
+          <div
+            className="w-full bg-surface-container-high rounded-full h-2.5 overflow-hidden"
+            role="progressbar"
+            aria-valuenow={3 - countdown}
+            aria-valuemin={0}
+            aria-valuemax={3}
+          >
+            <div
+              className="bg-primary h-full transition-all duration-1000 ease-linear rounded-full"
+              style={{ width: `${Math.max(10, ((4 - countdown) / 3) * 100)}%` }}
+            />
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                router.replace('/customer/dashboard');
+                router.refresh();
+              }}
+              className="inline-flex items-center gap-1.5 text-fluid-body-sm font-semibold text-primary hover:underline transition-all"
+            >
+              <span>Go to dashboard now</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate aria-label="Verify email" className="space-y-4">
@@ -220,7 +299,7 @@ function VerifyEmailForm() {
               placeholder="123456"
               aria-invalid={Boolean(error)}
               aria-describedby="code-hint"
-              className={`${INPUT_BASE_CLASSES} ${INPUT_NORMAL_CLASSES} text-center tracking-[0.3em]`}
+              className={`${INPUT_BASE_CLASSES} ${INPUT_NORMAL_CLASSES} text-center tracking-[0.3em] font-mono font-medium`}
             />
             <span id="code-hint" className="text-fluid-badge text-secondary mt-1 block">
               {email ? `Sent to ${email}. ` : ''}The code expires after a short time.

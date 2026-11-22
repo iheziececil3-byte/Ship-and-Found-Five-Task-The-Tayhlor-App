@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { prisma } from './prisma';
 import { verifyPassword } from './passwords';
 import { signInSchema } from './validations/auth';
+import { verifyVerificationSessionToken } from './verification-token';
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -18,6 +19,7 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
+      id: 'credentials',
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -57,6 +59,36 @@ export const authOptions: NextAuthOptions = {
 
         const isValid = await verifyPassword(password, user.passwordHash);
         if (!isValid) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.fullName,
+          role: user.role,
+          emailVerified: user.emailVerified,
+        };
+      },
+    }),
+    CredentialsProvider({
+      id: 'email-verification',
+      name: 'EmailVerification',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        verificationToken: { label: 'Verification Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.verificationToken) {
+          return null;
+        }
+
+        const user = await verifyVerificationSessionToken(
+          credentials.email,
+          credentials.verificationToken
+        );
+
+        if (!user) {
           return null;
         }
 

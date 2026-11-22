@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { createVerificationSessionToken } from '@/lib/verification-token';
 
 const verifyEmailSchema = z.object({
   email: z
@@ -92,8 +93,13 @@ export async function POST(req: Request) {
       },
     });
 
+    // Generate single-use session handshake token so the user can be logged in
+    // immediately without needing to manually re-enter their credentials.
+    const verificationToken = createVerificationSessionToken(user.id, email);
+
     return NextResponse.json({
       message: 'Email verified! You can now log in',
+      verificationToken,
     });
   } catch (error) {
     console.error('Email verification failed:', error);
