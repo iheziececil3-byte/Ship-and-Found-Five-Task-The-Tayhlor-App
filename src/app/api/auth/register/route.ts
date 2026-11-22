@@ -1,4 +1,3 @@
-import { randomInt } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
@@ -9,8 +8,7 @@ import {
 } from '@/lib/email';
 import { hashPassword } from '@/lib/passwords';
 import { signUpSchema } from '@/lib/validations/auth';
-
-const VERIFICATION_CODE_TTL_MS = 7 * 60 * 1000;
+import { generateVerificationCode, getVerificationExpiry } from '@/lib/verification-code';
 
 function getRecordEnvironment(): 'LIVE' | 'TEST' | 'PREVIEW' {
   const value = process.env.RECORD_ENVIRONMENT;
@@ -120,9 +118,8 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
 
     // Six-digit verification code from Node crypto, never Math.random().
-    const verificationCode = String(randomInt(100000, 999999));
-    const createdAt = new Date();
-    const verificationExpires = new Date(createdAt.getTime() + VERIFICATION_CODE_TTL_MS);
+    const verificationCode = generateVerificationCode();
+    const verificationExpires = getVerificationExpiry();
 
     // ACC-02: Public sign-up always creates a CUSTOMER account
     const user = await prisma.user.create({

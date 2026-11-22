@@ -129,7 +129,7 @@ Tailoring businesses coordinate most orders through direct contact. The brief de
 | FR-02 | Sign-in and sign-out for both roles, with email and password or Google. | P0 | Valid credentials open the correct dashboard. Invalid credentials show a generic error. Sessions expire after a set period of inactivity. |
 | FR-03 | Password reset by email. | P1 | Reset link is single-use and expires in 30 minutes. |
 | FR-04 | Role-based access control on every page and API route. | P0 | A customer calling a tailor route receives a 403. Automated tests cover every route. |
-| FR-05 | Email verification for email and password accounts. | P0 | An unverified customer can sign in to verify but cannot submit an order. The verification link is single-use and expires in 24 hours. Google sign-ins are treated as verified by Google. |
+| FR-05 | Email verification for email and password accounts using a 6-digit code that expires in 7 minutes. | P0 | An unverified customer can sign in to verify but cannot submit an order. The 6-digit verification code is single-use and expires in 7 minutes. Google sign-ins are treated as verified by Google. |
 
 ### 6.2 Measurements
 

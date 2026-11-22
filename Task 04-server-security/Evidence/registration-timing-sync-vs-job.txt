@@ -1,0 +1,20 @@
+Registration Timing: Synchronous vs Background
+
+Test 1: Background Job (Fire-and-forget)
+Time: 1.50 s
+The server responds immediately, and the emails send in the background.
+
+Test 2: Synchronous Email (Inside request)
+Browser Time: 12.50 s
+Server Log Time: 9173 ms
+
+Server Log Details:
+[auth] synchronous email timing { 
+  verificationEmailMs: 2995, 
+  welcomeEmailMs: 2320, 
+  emailTotalMs: 5315 
+}
+total-request: 7.514s
+POST /api/auth/register 201 in 9173ms
+
+Conclusion: Waiting for the email provider to send two emails added over 5 seconds of pure waiting time, pushing the total registration time to over 9 seconds. Moving this to a background job saved the user from a 10-second loading screen.

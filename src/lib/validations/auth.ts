@@ -77,6 +77,14 @@ export const requestPasswordResetSchema = z.object({
     .email({ message: 'Enter a valid email address' }),
 });
 
+export const resendVerificationSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email({ message: 'Enter a valid email address' }),
+});
+
 export const resetPasswordSchema = z.object({
   token: z.string().trim().min(1, { message: 'A valid reset link is required' }),
   password: z

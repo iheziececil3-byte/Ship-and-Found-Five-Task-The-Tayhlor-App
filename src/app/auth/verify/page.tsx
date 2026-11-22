@@ -17,6 +17,13 @@ const FOCUS_RING_CLASSES =
 const PRIMARY_BUTTON_CLASSES =
   `w-full py-3 px-4 rounded-lg bg-primary text-on-primary font-medium text-fluid-label shadow-soft hover:opacity-95 ${FOCUS_RING_CLASSES} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`;
 
+const SECONDARY_BUTTON_CLASSES =
+  `w-full py-3 px-4 rounded-lg border border-outline bg-surface text-primary font-medium text-fluid-label hover:bg-surface-container-low ${FOCUS_RING_CLASSES} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`;
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const RESEND_COOLDOWN_SECONDS = 60;
+
 function BrandLink() {
   return (
     <Link
@@ -118,13 +125,36 @@ function FormAlert({
 function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') ?? '';
+  const emailFromQuery = searchParams.get('email') ?? '';
 
+  const [email, setEmail] = useState(emailFromQuery);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const [isResending, setIsResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Keep the form in sync when the address arrives through the query string.
+  useEffect(() => {
+    setEmail(emailFromQuery);
+  }, [emailFromQuery]);
+
+  // Cooldown between resend requests, counted down once per second.
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   // Countdown timer: 3 seconds before auto-redirecting to dashboard
   useEffect(() => {
@@ -151,13 +181,21 @@ function VerifyEmailForm() {
     }
 
     setError(null);
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setError('Enter the email address you signed up with.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await fetch('/api/auth/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, email }),
+        body: JSON.stringify({ code, email: normalizedEmail }),
       });
 
       let data: { error?: string; message?: string; verificationToken?: string } | null = null;
@@ -179,7 +217,7 @@ function VerifyEmailForm() {
       // Automatically establish NextAuth session using single-use handshake token
       if (data?.verificationToken) {
         const signInResult = await signIn('email-verification', {
-          email,
+          email: normalizedEmail,
           verificationToken: data.verificationToken,
           redirect: false,
         });
@@ -198,6 +236,65 @@ function VerifyEmailForm() {
     }
   };
 
+  const handleResend = async () => {
+    if (isResending || isVerified || resendCooldown > 0) {
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setResendNotice(null);
+      setResendError('Enter the email address you signed up with.');
+      return;
+    }
+
+    setResendError(null);
+    setResendNotice(null);
+    setError(null);
+    setIsResending(true);
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      let data: { error?: string; message?: string } | null = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      if (!response.ok) {
+        const retryAfter = Number(response.headers.get('Retry-After'));
+
+        if (response.status === 429 && retryAfter > 0) {
+          setResendCooldown(retryAfter);
+        }
+
+        setResendError(
+          data?.error ?? 'We could not send a new code. Please try again.'
+        );
+        return;
+      }
+
+      setResendNotice(
+        data?.message ??
+          'If an unverified account exists for that address, we sent a new code. Check your inbox and spam folder.'
+      );
+      setCode('');
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      document.getElementById('code')?.focus();
+    } catch {
+      setResendError('An unexpected network error occurred. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
     <AuthFrame
       title={isVerified ? 'Verification Complete' : 'Verify your email'}
@@ -208,6 +305,7 @@ function VerifyEmailForm() {
       }
     >
       {error && <FormAlert tone="error">{error}</FormAlert>}
+      {resendNotice && <FormAlert tone="success">{resendNotice}</FormAlert>}
 
       {isVerified ? (
         <div className="py-2 text-center space-y-5">
@@ -274,6 +372,31 @@ function VerifyEmailForm() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate aria-label="Verify email" className="space-y-4">
+          {!emailFromQuery && (
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-fluid-label font-medium text-primary mb-1.5"
+              >
+                Email address
+                <span aria-hidden="true" className="ml-0.5 text-error">
+                  *
+                </span>
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@example.com"
+                className={`${INPUT_BASE_CLASSES} ${INPUT_NORMAL_CLASSES}`}
+              />
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="code"
@@ -323,6 +446,46 @@ function VerifyEmailForm() {
               'Verify Email'
             )}
           </button>
+
+          <div className="pt-4 mt-2 border-t border-outline-variant space-y-3">
+            <p className="text-fluid-body-sm text-secondary">
+              Didn&apos;t receive the code, or has yours expired?
+            </p>
+
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={isResending || resendCooldown > 0}
+              aria-describedby="resend-hint"
+              className={SECONDARY_BUTTON_CLASSES}
+            >
+              {isResending ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin motion-reduce:animate-none"
+                  />
+                  <span>Sending new code...</span>
+                </>
+              ) : resendCooldown > 0 ? (
+                `Send a new code in ${resendCooldown}s`
+              ) : (
+                'Send me a new code'
+              )}
+            </button>
+
+            <p id="resend-hint" className="text-fluid-badge text-secondary">
+              {email
+                ? `We will send a fresh 6-digit code to ${email}.`
+                : 'Enter your email address above to request a new code.'}
+            </p>
+
+            {resendError && (
+              <p role="alert" className="text-fluid-badge text-error">
+                {resendError}
+              </p>
+            )}
+          </div>
         </form>
       )}
     </AuthFrame>

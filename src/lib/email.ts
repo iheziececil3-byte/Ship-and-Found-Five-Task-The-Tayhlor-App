@@ -1,12 +1,12 @@
 import * as nodemailer from 'nodemailer';
 import { PASSWORD_RESET_TTL_MINUTES } from './password-reset';
+import { VERIFICATION_CODE_TTL_MINUTES } from './verification-code';
 
 // Task 01 design tokens used in outgoing HTML email: navy key colour and the
 // Manrope body font. Email clients do not load the app's CSS, so the values
 // are inlined here rather than referenced through CSS custom properties.
 const EMAIL_NAVY = '#101B2D';
 const EMAIL_FONT_STACK = 'Manrope, "Segoe UI", Arial, sans-serif';
-const VERIFICATION_CODE_TTL_MINUTES = 7;
 
 type SmtpConfig = {
   host: string;

@@ -91,7 +91,7 @@ Measurements, accounts, and privacy
 Measurement values are in centimetres (FR-10). Working assumption for the standard fields: chest, waist, hip, shoulder, sleeve, inseam, and length (PRD Q7).
 Each order keeps a snapshot of its measurements. Later edits or deletions do not change it (FR-20).
 Sign-up collects full name, email, phone, and password, or uses Google. A duplicate email shows a clear message. A Google account links to an existing account only after confirmation (FR-01). Passwords are stored as a salted hash.
-Unverified customers can sign in only to verify. Google sign-ins count as verified by Google (FR-05). Password reset links are single-use (FR-03).
+Unverified customers can sign in only to verify using a single-use 6-digit code that expires in 7 minutes. Google sign-ins count as verified by Google (FR-05). Password reset links are single-use (FR-03).
 A privacy notice appears at sign-up and in the footer. It states that order and payment data stay in the app, and that document text and FAQ questions go to Google. Check its wording against Google's terms before launch (FR-73).
 On the Gemini free tier, Google may use the content to improve its products, and human reviewers may read it. The owner decides before a real-customer pilot whether to stay on the free tier (PRD Q13). Category-based retention and deletion policy applies; specific retention periods require owner approval and legal review (PRD Q8).
 FAQ assistant rules
@@ -119,6 +119,7 @@ Approved document: a FAQ source the tailor wrote or uploaded and approved. Other
 Chunk: a passage of an approved document, split by heading and then paragraph, stored with its document title (PRD 9.3).
 Decline response: the fixed reply under FAQ assistant rules.
 Audit log: an append-only record of every order status change (with USER or SYSTEM attribution) and payment event (FR-71). Preserved upon account deletion; actor references anonymised.
+Verification code: a single-use 6-digit numeric code expiring in 7 minutes, required to verify email and password customer accounts before ordering (FR-05).
 Priority: P0 (required for launch), P1 (should have), P2 (later). The PRD defines no product tiers. "Free tier" refers only to the Google Gemini API.
 Rules files (.agents/rules/)
 Non-negotiable (every project):

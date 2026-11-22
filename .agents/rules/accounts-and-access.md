@@ -38,7 +38,7 @@ One job: define roles, sign-up, sign-in, verification, and password reset.
 
 - ACC-11: Every email and password account MUST be verified. An unverified customer MAY sign in to verify, and MUST NOT submit an order.
   Why: PRD FR-05 requires verification for email and password accounts and blocks orders until then.
-- ACC-12: The verification link is single use and expires after 24 hours.
+- ACC-12: The 6-digit verification code is single use and expires after 7 minutes.
   Why: PRD FR-05 sets these limits.
 - ACC-13: Google sign-ins count as verified.
   Why: PRD FR-05 says Google verifies the address.

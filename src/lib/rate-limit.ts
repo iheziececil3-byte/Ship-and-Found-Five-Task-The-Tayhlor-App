@@ -6,7 +6,9 @@ export type RateLimitedEndpoint =
   | 'register'
   | 'login'
   | 'passwordResetRequest'
-  | 'passwordResetConfirm';
+  | 'passwordResetConfirm'
+  | 'verificationResend'
+  | 'verifyEmail';
 
 type EndpointConfig = {
   requests: number;
@@ -48,6 +50,18 @@ const FORM_RATE_LIMITS: Record<RateLimitedEndpoint, EndpointConfig> = {
     window: '1 m',
     windowMs: 60_000,
     prefix: 'password-reset-confirm',
+  },
+  verificationResend: {
+    requests: 5,
+    window: '10 m',
+    windowMs: 10 * 60_000,
+    prefix: 'verification-resend',
+  },
+  verifyEmail: {
+    requests: 5,
+    window: '10 m',
+    windowMs: 10 * 60_000,
+    prefix: 'verify-email',
   },
 };
 
@@ -113,6 +127,10 @@ export function getRateLimitedEndpoint(
       return 'passwordResetRequest';
     case '/api/auth/password-reset/confirm':
       return 'passwordResetConfirm';
+    case '/api/auth/resend-verification':
+      return 'verificationResend';
+    case '/api/auth/verify-email':
+      return 'verifyEmail';
     default:
       return null;
   }

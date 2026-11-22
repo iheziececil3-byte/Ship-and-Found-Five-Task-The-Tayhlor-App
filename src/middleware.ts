@@ -115,5 +115,7 @@ export const config = {
     '/api/auth/password-reset',
     '/api/auth/password-reset/:path*',
     '/api/auth/callback/credentials',
+    '/api/auth/resend-verification',
+    '/api/auth/verify-email',
   ],
 };

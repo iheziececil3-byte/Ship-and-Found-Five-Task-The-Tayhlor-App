@@ -39,7 +39,7 @@ function resolveCallbackUrl(value: string | null): string {
   if (value && value.startsWith('/') && !value.startsWith('//')) {
     return value;
   }
-  return '/';
+  return '/customer/dashboard';
 }
 
 function buildAuthHref(mode: AuthMode, callbackUrl: string): string {
@@ -570,6 +570,16 @@ function LoginForm({
         />
       </div>
 
+      <div className="mt-4 text-center">
+        <Link
+          href="/auth/verify"
+          scroll={false}
+          className="inline-block py-1.5 text-fluid-badge text-secondary hover:text-primary hover:underline transition-colors"
+        >
+          Need to verify your email?
+        </Link>
+      </div>
+
       <div className="mt-8 text-center text-fluid-body-sm text-secondary">
         Don&apos;t have an account?{' '}
         <Link
@@ -946,6 +956,16 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
             disabled={isBusy}
             isLoading={isGoogleLoading}
           />
+        </div>
+
+        <div className="mt-4 text-center">
+          <Link
+            href="/auth/verify"
+            scroll={false}
+            className="inline-block py-1.5 text-fluid-badge text-secondary hover:text-primary hover:underline transition-colors"
+          >
+            Need to verify your email?
+          </Link>
         </div>
 
         <p className="mt-6 text-fluid-badge text-secondary text-center">
