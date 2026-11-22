@@ -57,6 +57,12 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PaymentAttemptStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
+
 enum FittingOutcome {
   SATISFACTORY
   ALTERATIONS_REQUIRED
@@ -189,8 +195,36 @@ model Payment {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
+  attempts PaymentAttempt[]
+
   @@index([orderId])
   @@index([paystackReference])
+  @@index([recordEnvironment])
+}
+
+/// One Paystack checkout or verification attempt for a payment. Records are
+/// append-only: write new rows for retries, never update an existing attempt.
+model PaymentAttempt {
+  id                String               @id @default(cuid())
+  paymentId         String
+  status            PaymentAttemptStatus @default(PENDING)
+  amount            Int // Amount in minor units: kobo
+  currency          String               @default("NGN")
+  provider          String               @default("paystack")
+  providerReference String?
+  errorCode         String?
+  errorMessage      String?
+  metadata          Json?
+  recordEnvironment RecordEnvironment    @default(LIVE)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([providerReference])
   @@index([recordEnvironment])
 }
 
