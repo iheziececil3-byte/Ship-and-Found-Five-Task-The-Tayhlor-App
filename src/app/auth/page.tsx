@@ -5,6 +5,15 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { TermsModal } from '@/components/terms/TermsModal';
+import {
+  AUTH_RATE_LIMIT_MESSAGES,
+  AUTH_RATE_LIMIT_UNAVAILABLE_MESSAGE,
+} from '@/lib/auth-rate-limit-messages';
+import {
+  clearRetryAt,
+  readRetryAt,
+  useRateLimitCountdown,
+} from '@/lib/use-rate-limit-countdown';
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
@@ -428,12 +437,23 @@ function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const {
+    remaining: retryRemaining,
+    isLimited,
+    expired: retryExpired,
+    start: startRetryCountdown,
+  } = useRateLimitCountdown('login');
+
   const isBusy = isLoading || isGoogleLoading;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setLoginEmailError(null);
+
+    if (isLimited) {
+      return;
+    }
 
     const isEmailBlank = !email.trim();
     const isPasswordBlank = !password.trim();
@@ -455,24 +475,70 @@ function LoginForm({
     setIsLoading(true);
 
     try {
-      const res = await signIn('credentials', {
-        email: email.trim().toLowerCase(),
-        password,
-        redirect: false,
-        callbackUrl,
+      const res = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+        }),
       });
 
-      if (!res || res.error) {
-        // ACC-07: Invalid sign-in MUST show a generic error
-        setError('Invalid email or password. Please check your credentials and try again.');
+      let data: { error?: string } | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      // A completed sign-in wins over any leftover lockout state.
+      if (res.ok) {
+        clearRetryAt('login');
+        router.push(callbackUrl);
+        router.refresh();
+        return;
+      }
+
+      // Ordered detection: the server-issued retry cookie first (it carries the
+      // exact retry time and survives a refresh), then an explicit 429, then a
+      // store outage, and only then a credential or unexpected failure.
+      const retryAt = readRetryAt('login');
+
+      if (retryAt !== null) {
+        startRetryCountdown(retryAt);
         setIsLoading(false);
         return;
       }
 
-      router.push(callbackUrl);
-      router.refresh();
+      if (res.status === 429) {
+        startRetryCountdown(null);
+        setIsLoading(false);
+        return;
+      }
+
+      if (res.status === 503) {
+        setError(AUTH_RATE_LIMIT_UNAVAILABLE_MESSAGE);
+        setIsLoading(false);
+        return;
+      }
+
+      // ACC-07: Invalid sign-in MUST show a generic error
+      setError(
+        data?.error ||
+          'Invalid email or password. Please check your credentials and try again.'
+      );
+      setIsLoading(false);
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      // A thrown error only means "rate limited" when the server actually left
+      // a retry cookie; otherwise it is a genuine network or unexpected error.
+      const retryAt = readRetryAt('login');
+
+      if (retryAt !== null) {
+        startRetryCountdown(retryAt);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+
       setIsLoading(false);
     }
   };
@@ -499,7 +565,11 @@ function LoginForm({
         </FormAlert>
       )}
 
-      {error && <FormAlert tone="error">{error}</FormAlert>}
+      {error ? (
+        <FormAlert tone="error">{error}</FormAlert>
+      ) : isLimited ? (
+        <FormAlert tone="error">{AUTH_RATE_LIMIT_MESSAGES.signIn}</FormAlert>
+      ) : null}
 
       <form onSubmit={handleSubmit} noValidate aria-label="Sign in" className="space-y-5">
         <TextField
@@ -543,10 +613,20 @@ function LoginForm({
         </div>
 
         <span className="sr-only" role="status">
-          {isLoading ? 'Signing in…' : ''}
+          {isLoading
+            ? 'Signing in…'
+            : retryExpired
+            ? 'You can try signing in again.'
+            : ''}
         </span>
-        <button type="submit" disabled={isBusy} className={PRIMARY_BUTTON_CLASSES}>
-          {isLoading ? (
+        <button
+          type="submit"
+          disabled={isBusy || isLimited}
+          className={PRIMARY_BUTTON_CLASSES}
+        >
+          {isLimited ? (
+            `Try again in ${retryRemaining}s`
+          ) : isLoading ? (
             <>
               <span
                 aria-hidden="true"
@@ -659,6 +739,13 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const {
+    remaining: retryRemaining,
+    isLimited,
+    expired: retryExpired,
+    start: startRetryCountdown,
+  } = useRateLimitCountdown('register');
+
   const isBusy = isLoading || isGoogleLoading;
 
   const handlePhoneChange = (val: string) => {
@@ -698,7 +785,7 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
     !acceptTerms;
 
   const isFormValid = !isFormInvalid;
-  const isAriaDisabled = isFormInvalid || isBusy;
+  const isAriaDisabled = isFormInvalid || isBusy || isLimited;
 
   const handleButtonClick = () => {
     if (!acceptTerms) {
@@ -708,7 +795,7 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isBusy || !acceptTerms) {
+    if (isBusy || isLimited || !acceptTerms) {
       if (!acceptTerms) {
         setTermsError('You must accept the Terms & Conditions to create an account.');
         setTimeout(() => {
@@ -758,9 +845,14 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
       const data = await res.json();
 
       if (res.status === 429) {
-        setError(
-          data.error || 'Too many requests. Please wait a moment before trying again.'
-        );
+        const retryHeader = Number(res.headers.get('Retry-After'));
+        const retryAt =
+          readRetryAt('register') ??
+          (Number.isFinite(retryHeader) && retryHeader > 0
+            ? Date.now() + retryHeader * 1000
+            : null);
+
+        startRetryCountdown(retryAt);
         setIsLoading(false);
         return;
       }
@@ -772,6 +864,7 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
       }
 
       // Send new customers to email verification before they can sign in.
+      clearRetryAt('register');
       router.push(
         `/auth/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`
       );
@@ -795,7 +888,11 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
   return (
     <>
       <AuthFrame title="Create customer account">
-        {error && <FormAlert tone="error">{error}</FormAlert>}
+        {error ? (
+          <FormAlert tone="error">{error}</FormAlert>
+        ) : isLimited ? (
+          <FormAlert tone="error">{AUTH_RATE_LIMIT_MESSAGES.signUp}</FormAlert>
+        ) : null}
 
         <form onSubmit={handleSubmit} noValidate aria-label="Create customer account" className="space-y-4">
           <TextField
@@ -891,14 +988,19 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
             </div>
           </div>
 
+          <span className="sr-only" role="status">
+            {retryExpired ? 'You can try creating your account again.' : ''}
+          </span>
+
           <button
             type="submit"
             onClick={handleButtonClick}
+            disabled={isLimited}
             aria-disabled={isAriaDisabled}
             aria-describedby={
               termsError
                 ? 'terms-click-error'
-                : isAriaDisabled
+                : !acceptTerms
                 ? 'terms-button-hint'
                 : undefined
             }
@@ -908,7 +1010,9 @@ function SignUpForm({ signInHref }: { signInHref: string }) {
                 : ''
             }`}
           >
-            {isLoading ? (
+            {isLimited ? (
+              `Try again in ${retryRemaining}s`
+            ) : isLoading ? (
               <>
                 <span
                   aria-hidden="true"

@@ -3,6 +3,20 @@
 // Provider: Vercel Postgres with pgvector (PRD Q12, database.md)
 // Currency: NGN stored as integer minor units (kobo)
 // Test Safeguard: recordEnvironment marker on all models
+//
+// ------------------------------------------------------------------------------
+// FIND A TABLE
+// ------------------------------------------------------------------------------
+//   1. Identity & access ....... User, Session
+//   2. Business ................ Business
+//   3. Measurements ............ Measurement
+//   4. Orders & fulfilment ..... Order, OrderStatusAudit, Fitting
+//   5. Payments ................ Payment, PaymentAttempt
+//   6. FAQ assistant ........... FAQDocument, FAQChunk, AssistantMessage
+//   7. Compliance .............. ContactAudit
+//
+// Each model is defined once, under its section, in the order listed above.
+// Relations are resolved by name, so a model may reference one defined later.
 // ==============================================================================
 
 datasource db {
@@ -17,6 +31,10 @@ generator client {
 
 // ------------------------------------------------------------------------------
 // Enums
+//   Identity & access: Role, RecordEnvironment
+//   Orders:            OrderStatus, ActorType, FittingOutcome
+//   Payments:          PaymentType, PaymentStatus, PaymentAttemptStatus
+//   FAQ assistant:     DocumentStatus
 // ------------------------------------------------------------------------------
 
 enum Role {
@@ -73,9 +91,9 @@ enum DocumentStatus {
   APPROVED
 }
 
-// ------------------------------------------------------------------------------
-// Core Models
-// ------------------------------------------------------------------------------
+// ==============================================================================
+// 1. Identity & access
+// ==============================================================================
 
 model User {
   id                  String            @id @default(cuid())
@@ -94,15 +112,36 @@ model User {
   updatedAt           DateTime          @updatedAt
 
   // Relationships
-  measurements     Measurement[]
-  orders           Order[]
-  auditInitiated   OrderStatusAudit[]
-  fittingsRecorded Fitting[]
-  contactAudits    ContactAudit[]
+  measurements      Measurement[]
+  orders            Order[]
+  auditInitiated    OrderStatusAudit[]
+  fittingsRecorded  Fitting[]
+  contactAudits     ContactAudit[]
+  sessions          Session[]
+  assistantMessages AssistantMessage[]
 
   @@index([email])
   @@index([recordEnvironment])
 }
+
+model Session {
+  id                String            @id @default(cuid())
+  userId            String
+  hashedToken       String            @unique
+  expiresAt         DateTime
+  createdAt         DateTime          @default(now())
+  recordEnvironment RecordEnvironment @default(LIVE)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([recordEnvironment])
+}
+
+// ==============================================================================
+// 2. Business
+// ==============================================================================
 
 model Business {
   id                String            @id @default(cuid())
@@ -117,10 +156,15 @@ model Business {
   @@index([recordEnvironment])
 }
 
+// ==============================================================================
+// 3. Measurements
+// ==============================================================================
+
 model Measurement {
   id                String            @id @default(cuid())
   userId            String
   user              User              @relation(fields: [userId], references: [id])
+  orders            Order[]
   label             String
   chest             Decimal?          @db.Decimal(5, 2)
   waist             Decimal?          @db.Decimal(5, 2)
@@ -134,13 +178,20 @@ model Measurement {
   updatedAt         DateTime          @updatedAt
 
   @@index([userId])
+  @@index([userId, recordEnvironment])
   @@index([recordEnvironment])
 }
+
+// ==============================================================================
+// 4. Orders & fulfilment
+// ==============================================================================
 
 model Order {
   id                     String            @id @default(cuid())
   customerId             String
   customer               User              @relation(fields: [customerId], references: [id])
+  measurementId          String?
+  measurement            Measurement?      @relation(fields: [measurementId], references: [id], onDelete: SetNull)
   garmentType            String
   description            String
   measurementsSnapshot   Json
@@ -148,6 +199,7 @@ model Order {
   declineReason          String?
   cancellationReason     String?
   quotedTotal            Int? // Amount in minor units: kobo (1 NGN = 100 kobo)
+  currency               String            @default("NGN")
   proposedCompletionDate DateTime?
   recordEnvironment      RecordEnvironment @default(LIVE)
   createdAt              DateTime          @default(now())
@@ -163,6 +215,8 @@ model Order {
   @@index([recordEnvironment])
 }
 
+// The SQL-only CHECK constraint OrderStatusAudit_actor_check (DAT-11) is defined
+// in the migration; Prisma cannot express CHECK constraints in this file.
 model OrderStatusAudit {
   id                String            @id @default(cuid())
   orderId           String
@@ -181,6 +235,27 @@ model OrderStatusAudit {
   @@index([recordEnvironment])
 }
 
+model Fitting {
+  id                String            @id @default(cuid())
+  orderId           String
+  order             Order             @relation(fields: [orderId], references: [id])
+  outcome           FittingOutcome
+  fittingDate       DateTime          @default(now())
+  tailorNotes       String?
+  recordedById      String
+  recordedBy        User              @relation(fields: [recordedById], references: [id])
+  recordEnvironment RecordEnvironment @default(LIVE)
+  createdAt         DateTime          @default(now())
+
+  @@index([orderId])
+  @@index([recordedById])
+  @@index([recordEnvironment])
+}
+
+// ==============================================================================
+// 5. Payments
+// ==============================================================================
+
 model Payment {
   id                String            @id @default(cuid())
   orderId           String
@@ -189,6 +264,9 @@ model Payment {
   amount            Int // Amount in minor units: kobo
   status            PaymentStatus     @default(PENDING)
   paystackReference String            @unique
+  providerTxId      String?
+  currency          String            @default("NGN")
+  provider          String            @default("paystack")
   paidAt            DateTime?
   refundedAt        DateTime?
   recordEnvironment RecordEnvironment @default(LIVE)
@@ -198,6 +276,7 @@ model Payment {
   attempts PaymentAttempt[]
 
   @@index([orderId])
+  @@index([orderId, type, status])
   @@index([paystackReference])
   @@index([recordEnvironment])
 }
@@ -228,21 +307,9 @@ model PaymentAttempt {
   @@index([recordEnvironment])
 }
 
-model Fitting {
-  id                String            @id @default(cuid())
-  orderId           String
-  order             Order             @relation(fields: [orderId], references: [id])
-  outcome           FittingOutcome
-  fittingDate       DateTime          @default(now())
-  tailorNotes       String?
-  recordedById      String
-  recordedBy        User              @relation(fields: [recordedById], references: [id])
-  recordEnvironment RecordEnvironment @default(LIVE)
-  createdAt         DateTime          @default(now())
-
-  @@index([orderId])
-  @@index([recordEnvironment])
-}
+// ==============================================================================
+// 6. FAQ assistant
+// ==============================================================================
 
 model FAQDocument {
   id                String            @id @default(cuid())
@@ -265,13 +332,35 @@ model FAQChunk {
   documentId        String
   document          FAQDocument       @relation(fields: [documentId], references: [id], onDelete: Cascade)
   heading           String?
+  chunkIndex        Int?
   content           String
   recordEnvironment RecordEnvironment @default(LIVE)
   createdAt         DateTime          @default(now())
 
+  @@unique([documentId, chunkIndex])
   @@index([documentId])
   @@index([recordEnvironment])
 }
+
+model AssistantMessage {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+  question          String
+  answer            String
+  sourceChunkIds    String[]
+  grounded          Boolean
+  recordEnvironment RecordEnvironment @default(LIVE)
+  createdAt         DateTime          @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@index([recordEnvironment])
+}
+
+// ==============================================================================
+// 7. Compliance
+// ==============================================================================
 
 model ContactAudit {
   id                String            @id @default(cuid())
@@ -285,5 +374,6 @@ model ContactAudit {
   createdAt         DateTime          @default(now())
 
   @@index([customerId])
+  @@index([customerId, recordEnvironment])
   @@index([recordEnvironment])
 }

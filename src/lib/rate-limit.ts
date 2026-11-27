@@ -121,7 +121,7 @@ export function getRateLimitedEndpoint(
   switch (path) {
     case '/api/auth/register':
       return 'register';
-    case '/api/auth/callback/credentials':
+    case '/api/auth/sign-in':
       return 'login';
     case '/api/auth/password-reset':
       return 'passwordResetRequest';

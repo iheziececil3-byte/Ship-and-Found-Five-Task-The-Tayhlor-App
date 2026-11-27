@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { AUTH_RATE_LIMIT_MESSAGES } from '@/lib/auth-rate-limit-messages';
 
 const INPUT_BASE_CLASSES =
   'w-full px-4 py-2.5 rounded-lg border bg-surface text-primary placeholder:text-secondary focus-visible:outline-none focus-visible:ring-2 text-fluid-label transition-all';
@@ -214,16 +214,24 @@ function VerifyEmailForm() {
         return;
       }
 
-      // Automatically establish NextAuth session using single-use handshake token
+      // Establish a database session with the single-use handshake token.
       if (data?.verificationToken) {
-        const signInResult = await signIn('email-verification', {
-          email: normalizedEmail,
-          verificationToken: data.verificationToken,
-          redirect: false,
+        const sessionResponse = await fetch('/api/auth/sign-in', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: normalizedEmail,
+            verificationToken: data.verificationToken,
+          }),
         });
 
-        if (signInResult?.error) {
-          console.error('Session establishment error:', signInResult.error);
+        if (!sessionResponse.ok) {
+          setError(
+            'Email verified, but your session could not be started. Please sign in with your password.'
+          );
+          setIsLoading(false);
+          router.push('/auth?mode=login');
+          return;
         }
       }
 
@@ -276,7 +284,9 @@ function VerifyEmailForm() {
         }
 
         setResendError(
-          data?.error ?? 'We could not send a new code. Please try again.'
+          response.status === 429
+            ? AUTH_RATE_LIMIT_MESSAGES.codeRequest
+            : data?.error ?? 'We could not send a new code. Please try again.'
         );
         return;
       }

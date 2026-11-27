@@ -1,0 +1,13 @@
+Proof of fresh tokens on every sign-in:
+
+SESSION ONE:
+ID: cmwz6ohzl0001ek2q2k2l7wuy
+Hashed Token: a6ce97080a4679f5b1893a2859440a40acbb85ccfa87c253785c696b1992691b
+User ID: cmwrslwrb0000wwya4538pdh2
+
+SESSION TWO:
+ID: cmwz72vbm0003ek2qkgl12ttz
+Hashed Token: 3e32f66c66007bc2a9bdcd5449b267617bdcd7b2562afad2e36b35b59b0640a7
+User ID: cmwrslwrb0000wwya4538pdh2
+
+Conclusion: The IDs and hashes are completely different, proving a fresh cryptographic token is generated on every sign-in.
